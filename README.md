@@ -65,19 +65,9 @@ mvn clean install
 Update credentials and URLs in `.env` file:
 ```bash
 # Application Configuration
-BASE_URL=https://your-wppool-app.com
-API_BASE_URL=https://api.your-wppool-app.com
-
-# Test Credentials
-TEST_USERNAME=your-test-email@domain.com
-TEST_PASSWORD=your-test-password
-ADMIN_USERNAME=your-admin-email@domain.com
-ADMIN_PASSWORD=your-admin-password
-
-# Browser Configuration
-BROWSER=chrome
-HEADLESS=false
-BROWSER_TIMEOUT=30
+WP_URL=http://wppool-test.local/wp-admin
+WP_USER=admin
+WP_PASS=admin
 ```
 
 #### 4. Terminal Encoding (Windows Only)

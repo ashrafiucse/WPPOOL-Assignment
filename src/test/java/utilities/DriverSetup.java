@@ -38,14 +38,6 @@ public class DriverSetup {
                     Level.SEVERE
             );
 
-            // Set UTF-8 encoding for console output
-            System.setOut(
-                    new PrintStream(System.out, true, StandardCharsets.UTF_8)
-            );
-            System.setErr(
-                    new PrintStream(System.err, true, StandardCharsets.UTF_8)
-            );
-
             // Set system properties for proper character encoding
             System.setProperty("file.encoding", "UTF-8");
             System.setProperty("console.encoding", "UTF-8");

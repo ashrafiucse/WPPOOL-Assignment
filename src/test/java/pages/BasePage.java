@@ -15,9 +15,9 @@ import java.util.List;
 import static utilities.DriverSetup.getDriver;
 
 public class BasePage {
-    private static final Duration DEFAULT_WAIT = Duration.ofSeconds(10);
-    private static final Duration SHORT_WAIT = Duration.ofSeconds(4);
-    private static final Duration QUICK_WAIT = Duration.ofSeconds(3);
+    private static final Duration DEFAULT_WAIT = Duration.ofSeconds(20);
+    private static final Duration SHORT_WAIT = Duration.ofSeconds(10);
+    private static final Duration QUICK_WAIT = Duration.ofSeconds(4);
 
     public BasePage(WebDriver driver) {}
 
@@ -28,7 +28,7 @@ public class BasePage {
     }
 
     public void clickOnElement(By locator) {
-        clickOnElementWithRetry(locator, 1, false);
+        clickOnElementWithRetry(locator, 3, false);
     }
 
     public void clickOnElement(WebElement element) {
