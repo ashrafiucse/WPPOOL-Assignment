@@ -3,46 +3,24 @@ package testcases.Part_A;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.Test;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.AfterMethod;
 import org.testng.Assert;
 import utilities.DriverSetup;
 import pages.Part_A.WordPressLoginPage;
 import pages.Part_A.WordPressDashboardPage;
+import testcases.BaseTest;
 
-public class WordPressLoginTest {
+public class WordPressLoginTest extends BaseTest {
     
-    @BeforeMethod
-    public void setUp() {
-        DriverSetup.initDriver();
-    }
-    
-    @AfterMethod
-    public void tearDown() {
-        DriverSetup.quitDriver();
-    }
-    
-    @Test(description = "Verify WordPress login")
+@Test(description = "Verify WordPress Login Functionality")
     public void verifyWordpressLogin() {
         WebDriver driver = DriverSetup.getDriver();
-        
-        // Load .env file directly
-        Dotenv dotenv = Dotenv.configure().load();
         
         // Initialize page objects
         WordPressLoginPage loginPage = new WordPressLoginPage(driver);
         WordPressDashboardPage dashboardPage = new WordPressDashboardPage(driver);
         
-        // Navigate to WordPress login page using URL from environment
-        String baseUrl = dotenv.get("WP_URL");
-        
-        driver.get(baseUrl);
-        
-        // Perform login using credentials from environment
-        String username = dotenv.get("WP_USER");
-        String password = dotenv.get("WP_PASS");
-        
-        loginPage.doLogin(username, password);
+        // Perform login using environment credentials (handled in doLogin method)
+        loginPage.doLogin();
         
         // Verify dashboard page locators are visible
         boolean isHomeButtonVisible = dashboardPage.isElementVisible(dashboardPage.dashboardHomeButton);
