@@ -1,58 +1,215 @@
-# WPPOOL-Assignment
+# WPPOOL Selenium Automation Testing
 
-A Java-based automation testing project using Selenium WebDriver and TestNG.
+A comprehensive Selenium WebDriver automation framework for testing WPPOOL web application with support for sequential and parallel test execution across multiple browsers and beautiful Allure reporting.
 
-## Prerequisites
+## 🚀 Key Features
 
-Before running this project, ensure you have the following installed:
+- **Multiple Browser Support** - Chrome, Firefox, Edge with automatic driver management
+- **Headless & Headed Modes** - Run tests with or without browser GUI
+- **Sequential & Parallel Execution** - Choose between stable sequential or fast parallel execution
+- **Page Object Model** - Clean, maintainable code structure
+- **Environment Configuration** - Centralized configuration via .env file
+- **Allure Reporting** - Beautiful, interactive test reports with screenshots and logs
+- **Explicit Waits Only** - No flaky tests, reliable execution
+- **Thread-Safe Architecture** - Safe parallel execution with isolated driver instances
 
-- **Java Development Kit (JDK)** - Version 8 or higher
-- **Apache Maven** - Version 3.6.0 or higher
-- **Git** - For cloning the repository
+---
 
-## How to Clone the Project
+## ⚙️ Prerequisites & Setup
 
-1. Open your terminal or command prompt
-2. Navigate to the directory where you want to clone the project
-3. Run the following command:
+### System Requirements
+- **Java**: Version 8 or higher (17+ recommended)
+- **Maven**: Version 3.6+ 
+- **RAM**: Minimum 8GB (16GB recommended for parallel execution)
 
+### Software Installation
+
+#### Install Java 8+
 ```bash
-git clone https://github.com/ashrafiucse/WPPOOL-Assignment.git
+# Windows (using Chocolatey)
+choco install openjdk
+
+# macOS (using Homebrew)
+brew install openjdk
+
+# Linux (Ubuntu/Debian)
+sudo apt install openjdk-8-jdk
 ```
 
-4. Navigate into the project directory:
-
+#### Install Maven
 ```bash
+# Windows (using Chocolatey)
+choco install maven
+
+# macOS (using Homebrew)
+brew install maven
+
+# Linux (Ubuntu/Debian)
+sudo apt install maven
+```
+
+### Project Setup
+
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/ashrafiucse/WPPOOL-Assignment.git
 cd WPPOOL-Assignment
 ```
 
-## How to Run the Project
+#### 2. Install Dependencies
+```bash
+mvn clean install
+```
 
-### Option 1: Using Maven Commands
+#### 3. Configure Test Data
+Update credentials and URLs in `.env` file:
+```bash
+# Application Configuration
+BASE_URL=https://your-wppool-app.com
+API_BASE_URL=https://api.your-wppool-app.com
 
-1. **Compile the project:**
-   ```bash
-   mvn clean compile
-   ```
+# Test Credentials
+TEST_USERNAME=your-test-email@domain.com
+TEST_PASSWORD=your-test-password
+ADMIN_USERNAME=your-admin-email@domain.com
+ADMIN_PASSWORD=your-admin-password
 
-2. **Run tests:**
-   ```bash
-   mvn test
-   ```
+# Browser Configuration
+BROWSER=chrome
+HEADLESS=false
+BROWSER_TIMEOUT=30
+```
 
-3. **Run tests with Allure reports:**
-   ```bash
-   mvn clean test allure:serve
-   ```
+#### 4. Terminal Encoding (Windows Only)
+```bash
+# Command Prompt
+chcp 65001
 
-### Option 2: Using IDE
+# PowerShell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
 
-1. Open the project in your favorite IDE (IntelliJ IDEA, Eclipse, etc.)
-2. Import the project as a Maven project
-3. Right-click on the `pom.xml` file and select "Maven" → "Reload project"
-4. Run the test classes from the IDE
+---
 
-## Project Structure
+## 🚀 Test Execution Commands
+
+### Sequential Execution (Recommended - Stable)
+
+#### Headless Mode
+```bash
+# Chrome Sequential Headless
+mvn clean test -Dbrowser=chrome -Dheadless=true
+
+# Firefox Sequential Headless
+mvn clean test -Dbrowser=firefox -Dheadless=true
+
+# Edge Sequential Headless  
+mvn clean test -Dbrowser=edge -Dheadless=true
+```
+
+#### Headed Mode (Browser Window Visible)
+```bash
+# Chrome Sequential Headed
+mvn clean test -Dbrowser=chrome
+
+# Firefox Sequential Headed
+mvn clean test -Dbrowser=firefox
+
+# Edge Sequential Headed
+mvn clean test -Dbrowser=edge
+```
+
+### Parallel Execution (Fast - Requires More Resources)
+
+#### Headless Mode
+```bash
+# Chrome Parallel Headless
+mvn clean test -Pparallel -Dbrowser=chrome -Dheadless=true
+
+# Firefox Parallel Headless  
+mvn clean test -Pparallel -Dbrowser=firefox -Dheadless=true
+
+# Edge Parallel Headless
+mvn clean test -Pparallel -Dbrowser=edge -Dheadless=true
+```
+
+#### Headed Mode
+```bash
+# Chrome Parallel Headed
+mvn clean test -Pparallel -Dbrowser=chrome
+
+# Firefox Parallel Headed
+mvn clean test -Pparallel -Dbrowser=firefox
+
+# Edge Parallel Headed  
+mvn clean test -Pparallel -Dbrowser=edge
+```
+
+### Special Commands
+
+#### Quick Smoke Tests
+```bash
+mvn clean test -Psmoke -Dbrowser=chrome -Dheadless=true
+```
+
+#### Single Test Execution
+```bash
+# Run specific test class
+mvn test -Dtest=YourTestClass -Dbrowser=chrome -Dheadless=true
+
+# Run specific test method  
+mvn test -Dtest=YourTestClass#yourTestMethod -Dbrowser=chrome
+```
+
+---
+
+## 📊 Test Reports with Allure
+
+### Generate and View Reports
+```bash
+# Run tests and generate report
+mvn clean test
+
+# Generate Allure report
+mvn allure:report
+
+# Serve report locally (opens in browser)
+mvn allure:serve
+
+# Run tests and immediately serve report
+mvn clean test allure:serve
+```
+
+### Report Features
+- **Interactive Dashboard** - Overview of test execution
+- **Test Details** - Step-by-step execution with screenshots
+- **Timeline View** - Parallel execution visualization
+- **Categories** - Group tests by type (smoke, regression, etc.)
+- **Environment Info** - Browser, OS, and execution details
+
+Report will be available at `http://localhost:8080` when using `allure:serve`
+
+---
+
+## 📊 Test Coverage
+
+### Test Statistics
+- **Total Tests**: Growing test suite
+  - **Login Tests**: Authentication and authorization
+  - **Dashboard Tests**: Main functionality verification
+  - **User Management Tests**: CRUD operations
+  - **Settings Tests**: Configuration management
+  - **Additional Tests**: Feature-specific test cases
+
+### Performance
+- **Sequential**: Stable execution, lower resource usage
+- **Parallel**: Faster execution, higher resource usage
+- **Headless**: Faster execution, no GUI
+- **Headed**: Visual debugging, slower execution
+
+---
+
+## 🏗️ Project Structure
 
 ```
 WPPOOL-Assignment/
@@ -67,50 +224,83 @@ WPPOOL-Assignment/
 │           ├── pages/
 │           │   └── BasePage.java
 │           └── utilities/
-│               └── DriverSetup.java
+│               ├── DriverSetup.java
+│               └── ConfigManager.java
+├── .env
 ├── .gitignore
 ├── pom.xml
+├── testng.xml
 └── README.md
 ```
 
-## Dependencies
+### Key Components
+- **BasePage.java** - Common page methods and utilities
+- **DriverSetup.java** - WebDriver initialization and management
+- **ConfigManager.java** - Environment variable management
+- **testng.xml** - TestNG configuration for parallel/sequential execution
+- **.env** - Centralized configuration file
+
+---
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### Tests Running Multiple Times
+```bash
+# Use correct profile
+mvn clean test -Pparallel  # For parallel
+mvn clean test             # For sequential (default)
+```
+
+#### Browser Driver Issues
+```bash
+mvn clean install -U
+```
+
+#### Memory Issues (Parallel Mode)
+```bash
+export MAVEN_OPTS="-Xmx4g -Xms2g"
+mvn clean test -Pparallel
+```
+
+#### For Debugging
+```bash
+# Run single test with browser visible
+mvn test -Dtest=TestClass#testMethod -Dbrowser=chrome
+```
+
+#### Allure Report Issues
+```bash
+# Clean previous results
+mvn clean
+
+# Regenerate report
+mvn test allure:report
+```
+
+---
+
+## 🔧 Default Settings
+
+- **Execution**: Sequential (stable)
+- **Browser**: Chrome
+- **Mode**: Headed (browser window visible)
+- **Timeout**: 10 seconds for waits
+- **Reports**: Allure with automatic generation
+- **Configuration**: Environment variables via .env
+
+---
+
+## 📚 Dependencies
 
 - **Selenium WebDriver** (4.26.0) - Web automation framework
 - **TestNG** (7.10.2) - Testing framework
 - **Allure TestNG** (2.29.1) - Test reporting
 - **WebDriverManager** (6.2.0) - Browser driver management
 - **JavaFaker** (1.0.2) - Test data generation
+- **Dotenv Java** (3.0.0) - Environment variable management
 
-## Running Specific Tests
+---
 
-To run specific test classes or methods:
-
-```bash
-# Run specific test class
-mvn test -Dtest=YourTestClass
-
-# Run specific test method
-mvn test -Dtest=YourTestClass#yourTestMethod
-```
-
-## Viewing Test Reports
-
-After running tests with Allure:
-
-1. Generate the report:
-   ```bash
-   mvn allure:report
-   ```
-
-2. View the report:
-   ```bash
-   mvn allure:serve
-   ```
-
-The report will be available at `http://localhost:8080`
-
-## Troubleshooting
-
-- If you encounter Maven-related issues, ensure your Maven installation is correct and the `MAVEN_HOME` environment variable is set
-- For browser driver issues, the WebDriverManager should automatically handle driver downloads
-- Make sure you have sufficient permissions to execute Maven commands in your project directory
+**Happy Testing! 🚀**
