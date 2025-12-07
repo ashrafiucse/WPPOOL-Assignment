@@ -1,7 +1,10 @@
 package testcases.Part_A;
 
+import com.github.javafaker.Faker;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.Assert;
@@ -20,6 +23,7 @@ public class FlexTablePluginTest extends BaseTest {
     WordPressDashboardPage wordPressDashboardPage = new WordPressDashboardPage(driver);
     WordPressPluginsPage wordPressPluginsPage = new WordPressPluginsPage(driver);
     FlexTablePluginPage flexTablePluginPage = new FlexTablePluginPage(driver);
+    Faker faker = new Faker();
 
     @BeforeMethod
             public void wordPressLogin() {
@@ -83,4 +87,50 @@ public class FlexTablePluginTest extends BaseTest {
     }
 
 
+    @Test(priority = 3, description = "Create a New Table Using Google Sheet Input"
+    )
+    public void verifyNewTableCreationWithGoogleSheet() throws InterruptedException {
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        boolean isExistingTableAvailable = flexTablePluginPage.isElementVisible(flexTablePluginPage.existingTableSearchField);
+        if (isExistingTableAvailable) {
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.createNewTableLink);
+
+            // Load .env file directly
+            Dotenv dotenv = Dotenv.configure().load();
+
+            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
+            flexTablePluginPage.sendKeysText(flexTablePluginPage.googleSheetInputField,googleSheetURL);
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.createTableFromUrlButton);
+
+            String tableTitle = faker.commerce().productName();
+            String tableDescription = faker.lorem().paragraph(1);
+            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableTitleField, tableTitle);
+            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableDescriptionField, tableDescription);
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButton);
+            flexTablePluginPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+            By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4",tableTitle);
+            Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle),tableTitle);
+        }
+        else {
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.createNewTableButton);
+
+            // Load .env file directly
+            Dotenv dotenv = Dotenv.configure().load();
+
+            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
+            flexTablePluginPage.sendKeysText(flexTablePluginPage.googleSheetInputField,googleSheetURL);
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.createTableFromUrlButton);
+
+            String tableTitle = faker.commerce().productName();
+            String tableDescription = faker.lorem().paragraph(1);
+
+            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableTitleField, tableTitle);
+            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableDescriptionField, tableDescription);
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButton);
+            flexTablePluginPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+            By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4",tableTitle);
+            Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle),tableTitle);
+        }
+
+    }
 }
