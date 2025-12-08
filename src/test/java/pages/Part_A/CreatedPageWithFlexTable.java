@@ -12,4 +12,5 @@ public class CreatedPageWithFlexTable extends BasePage {
         super(driver);
     }
     public By NameColumn = By.xpath("//tr//td[1]//div");
+    public By IDColumn = By.xpath("//tr//td[2]//div");
 }

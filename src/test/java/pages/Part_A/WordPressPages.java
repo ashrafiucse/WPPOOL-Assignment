@@ -1,13 +1,19 @@
 package pages.Part_A;
 
+import com.github.javafaker.Faker;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import pages.BasePage;
+
+import static utilities.DriverSetup.getDriver;
 
 public class WordPressPages extends BasePage {
     public WordPressPages(WebDriver driver) {
         super(driver);
     }
+
+    WordPressDashboardPage wordPressDashboardPage = new WordPressDashboardPage(getDriver());
+    Faker faker = new Faker();
     public By addPageButton = By.xpath("(//a[contains(text(),'Add Page')])[2]");
     public By pageTitleField = By.xpath("//h1[contains(@class, 'editor-post-title__input') and @contenteditable='true']");
     public By modalCloseButton = By.xpath("//button[@aria-label='Close']");
@@ -19,4 +25,35 @@ public class WordPressPages extends BasePage {
     public By confirmPublishButton = By.xpath("(//button[@aria-disabled='false' and contains(text(),'Publish')])[2]");
     public By viewPageButton = By.xpath("//a[contains(text(),'View Page')]");
 
+    public String createPageUsingShortCode(String pageTitle, String shortCode) {
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.pagesMenu);
+        clickOnElement(addPageButton);
+        boolean isModalOpened;
+        isModalOpened = isElementVisible(modalCloseButton);
+        if (isModalOpened) {
+            clickOnElement(modalCloseButton);
+            typeIntoRichTextEditor(pageTitleField, pageTitle);
+            clickOnElement(blockInserterButton);
+            sendKeysText(blockSearchField, "ShortCode");
+            clickOnElement(shortCodeBlockToSelect);
+            typeIntoRichTextEditor(shortCodeInputFieldToCreatePage, shortCode);
+            clickOnElement(publishButton);
+            clickOnElement(confirmPublishButton);
+
+            String PageUrl = getElementAttribute(viewPageButton, "href");
+            return PageUrl;
+        }
+        else {
+            typeIntoRichTextEditor(pageTitleField, pageTitle);
+            clickOnElement(blockInserterButton);
+            sendKeysText(blockSearchField, "ShortCode");
+            clickOnElement(shortCodeBlockToSelect);
+            typeIntoRichTextEditor(shortCodeInputFieldToCreatePage, shortCode);
+            clickOnElement(publishButton);
+            clickOnElement(confirmPublishButton);
+
+            String PageUrl = getElementAttribute(viewPageButton, "href");
+            return PageUrl;
+        }
+    }
 }

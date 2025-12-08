@@ -103,50 +103,15 @@ public class FlexTablePluginTest extends BaseTest {
     @Test(priority = 3, description = "Create a New Table Using Google Sheet Input"
     )
     public void verifyNewTableCreationWithGoogleSheet() throws Exception {
-        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-        boolean isExistingTableAvailable = flexTablePluginPage.isElementVisible(flexTablePluginPage.existingTableSearchField);
-        if (isExistingTableAvailable) {
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createNewTableLink);
+        String tableTitle = faker.commerce().productName();
+        String tableDescription = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(tableTitle,tableDescription);
+        By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4", tableTitle);
+        Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle), tableTitle);
 
-            // Load .env file directly
-            Dotenv dotenv = Dotenv.configure().load();
-
-            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.googleSheetInputField, googleSheetURL);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createTableFromUrlButton);
-
-            String tableTitle = faker.commerce().productName();
-            String tableDescription = faker.lorem().paragraph(1);
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableTitleField, tableTitle);
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableDescriptionField, tableDescription);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButton);
-            flexTablePluginPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-            By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4", tableTitle);
-            Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle), tableTitle);
-        } else {
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createNewTableButton);
-
-            // Load .env file directly
-            Dotenv dotenv = Dotenv.configure().load();
-
-            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.googleSheetInputField, googleSheetURL);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createTableFromUrlButton);
-
-            String tableTitle = faker.commerce().productName();
-            String tableDescription = faker.lorem().paragraph(1);
-
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableTitleField, tableTitle);
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableDescriptionField, tableDescription);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButton);
-            flexTablePluginPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-            By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4", tableTitle);
-            Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle), tableTitle);
-        }
     }
 
-    @Test(priority = 4, description = "Verify Table Display Using Shortcode with WP-CLI",
-            dependsOnMethods = {"verifyNewTableCreationWithGoogleSheet"})
+    @Test(priority = 4, description = "Verify Table Display Using Shortcode")
     public void verifyTableDisplayUsingShortcode() throws Exception {
         // 1. Get CSV data from Google Sheets
         List<List<String>> csvData = flexTablePluginPage.getCsvData();
@@ -157,24 +122,9 @@ public class FlexTablePluginTest extends BaseTest {
         // Get the shortcode from the first table
         String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
         shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String pageTitle = faker.commerce().productName();
+        String PageUrl = wordPressPages.createPageUsingShortCode(pageTitle, shortCode);
 
-        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.pagesMenu);
-        wordPressPages.clickOnElement(wordPressPages.addPageButton);
-        boolean isModalOpened;
-        isModalOpened = wordPressPages.isElementVisible(wordPressPages.modalCloseButton);
-        if(isModalOpened) {
-            wordPressPages.clickOnElement(wordPressPages.modalCloseButton);
-            String pageTitle = faker.commerce().productName();
-            //  wordPressPages.sendKeysText(wordPressPages.pageTitleField,pageTitle);
-            wordPressPages.typeIntoRichTextEditor(wordPressPages.pageTitleField,pageTitle);
-            wordPressPages.clickOnElement(wordPressPages.blockInserterButton);
-            wordPressPages.sendKeysText(wordPressPages.blockSearchField,"ShortCode");
-            wordPressPages.clickOnElement(wordPressPages.shortCodeBlockToSelect);
-            wordPressPages.typeIntoRichTextEditor(wordPressPages.shortCodeInputFieldToCreatePage,shortCode);
-            wordPressPages.clickOnElement(wordPressPages.publishButton);
-            wordPressPages.clickOnElement(wordPressPages.confirmPublishButton);
-
-            String PageUrl = wordPressPages.getElementAttribute(wordPressPages.viewPageButton,"href");
             getDriver().get(PageUrl);
 
             Thread.sleep(3000);
@@ -183,9 +133,14 @@ public class FlexTablePluginTest extends BaseTest {
                 String text = nameElements.get(i).getText();
                 Assert.assertEquals(text, csvData.get(i+1).get(0));
             }
+
+            List<WebElement> idElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+            for(int i=0; i<idElements.size(); i++) {
+                String text = idElements.get(i).getText();
+                Assert.assertEquals(text, csvData.get(i+1).get(1));
+            }
         }
 
     }
-}
 
 
