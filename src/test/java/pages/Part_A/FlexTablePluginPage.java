@@ -42,7 +42,10 @@ public class FlexTablePluginPage extends BasePage {
     public By saveChangesButton = By.xpath("//button[contains(text(),'Save changes')]");
     public By createNewTableLink = By.xpath("//a[contains(text(),'Create new table')]");
     public By listFirstTableShortCode = By.xpath("(//span[contains(text(),'[gswpts_table=')])[1]");
-    
+    public By tableCustomizationMenu = By.xpath("//span[contains(text(),'3. Table customization')]");
+    public By showTitleToggle = By.xpath("//input[@id='show-title']");
+    public By showDescriptionToggle = By.xpath("//input[@id='show-description']");
+    public By saveChangesButtonToSaveCustomization = By.xpath("//button[contains(text(),'Save changes')]");
     // New locators for table verification
     public By frontendTableContainer = By.cssSelector(".gswpts-table-container");
     public By frontendTableRows = By.cssSelector(".gswpts-table-container tr");
@@ -110,5 +113,8 @@ public class FlexTablePluginPage extends BasePage {
         String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
         String csvUrl = convertGoogleSheetToCsvUrl(googleSheetURL);
         return readCsvFromUrl(csvUrl);
+    }
+    public By getTableEditTag(String title) {
+        return By.xpath("//h4[contains(text(),'"+title+"')]//parent::a");
     }
 }

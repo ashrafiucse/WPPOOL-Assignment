@@ -141,6 +141,50 @@ public class FlexTablePluginTest extends BaseTest {
             }
         }
 
+    @Test(priority = 5, description = "Enable 'Show Table Title' and 'Show Table Description Below Table")
+    public void verifyShowTableTableAndShowTableDescriptionDisplayProperly() throws InterruptedException {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+
+        String wpURL = getDriver().getCurrentUrl();
+        //System.out.println("WP URL: " + wpURL);
+        getDriver().get(PageUrl);
+        By titleInPage = wordPressPages.getElementThroughTagAndText("h3",title);
+        By descriptionInPage = wordPressPages.getElementThroughTagAndText("p",description);
+        Assert.assertFalse(wordPressPages.isElementVisible(titleInPage));
+        Assert.assertFalse(wordPressPages.isElementVisible(descriptionInPage));
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        By tableEdit = flexTablePluginPage.getTableEditTag(title);
+        flexTablePluginPage.clickOnElement(tableEdit);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableCustomizationMenu);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showTitleToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showDescriptionToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+        getDriver().get(PageUrl);
+        By titleInPageVisible = wordPressPages.getElementThroughTagAndText("h3",title);
+        By descriptionInPageVisible = wordPressPages.getElementThroughTagAndText("p",description);
+        Assert.assertTrue(wordPressPages.isElementVisible(titleInPageVisible));
+        Assert.assertTrue(wordPressPages.isElementVisible(descriptionInPageVisible));
+    }
+
+
     }
 
 

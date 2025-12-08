@@ -24,6 +24,7 @@ public class WordPressPages extends BasePage {
     public By publishButton = By.xpath("//button[contains(text(),'Publish')]");
     public By confirmPublishButton = By.xpath("(//button[@aria-disabled='false' and contains(text(),'Publish')])[2]");
     public By viewPageButton = By.xpath("//a[contains(text(),'View Page')]");
+    public By existingPageSearchButton = By.xpath("//input[@id='post-search-input']");
 
     public String createPageUsingShortCode(String pageTitle, String shortCode) {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.pagesMenu);
