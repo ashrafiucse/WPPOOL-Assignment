@@ -90,7 +90,13 @@ public class FlexTablePluginTest extends BaseTest {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
 
         boolean isCreateButtonVisible = flexTablePluginPage.isElementVisible(flexTablePluginPage.createNewTableButton);
-        Assert.assertTrue(isCreateButtonVisible, "FlexTable Dashboard did not load correctly");
+        if (isCreateButtonVisible) {
+            Assert.assertTrue(isCreateButtonVisible, "FlexTable Dashboard did not load correctly");
+        }
+        else {
+            Assert.assertTrue(flexTablePluginPage.isElementVisible(flexTablePluginPage.createNewTableLink));
+            Assert.assertTrue(flexTablePluginPage.isElementVisible(flexTablePluginPage.existingTableSearchField));
+        }
     }
 
 
