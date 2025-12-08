@@ -48,6 +48,9 @@ public class FlexTablePluginPage extends BasePage {
     public By saveChangesButtonToSaveCustomization = By.xpath("//button[contains(text(),'Save changes')]");
     public By showEntryInfoToggle = By.xpath("//input[@id='hide-entry-info']");
     public By showPaginationToggle = By.xpath("//input[@id='hide-pagination']");
+    public By tableStylingButton = By.xpath("//button[contains(text(),'Styling')]");
+    public By rowPerPageDropDown = By.xpath("//select[@id='rows-per-page']");
+    public By tableHeightDropDown = By.xpath("//select[@id='table_height']");
 
     public void createNewTableWithGoogleSheet(String tableTitle, String tableDescription) {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);

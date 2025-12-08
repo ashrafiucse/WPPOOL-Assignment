@@ -238,7 +238,71 @@ public class FlexTablePluginTest extends BaseTest {
         }
     }
 
+    @Test(priority = 7, description = "Update 'Rows Per Page & Table Height")
+    public void verifyUpdatingRowPerPageAndTableHeightWorksProperly() throws InterruptedException {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
 
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+        getDriver().get(PageUrl);
+
+        Thread.sleep(3000);
+        List<WebElement> nameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+        int defaultRowSize = nameElements.size();
+
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        By tableEdit = flexTablePluginPage.getTableEditTag(title);
+        flexTablePluginPage.clickOnElement(tableEdit);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableCustomizationMenu);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableStylingButton);
+        if (defaultRowSize+1>5) {
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.rowPerPageDropDown,"5");
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.tableHeightDropDown,"1000px");
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+
+            getDriver().get(PageUrl);
+            Thread.sleep(3000);
+            List<WebElement> updatedNameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+            int updatedRowSize = updatedNameElements.size();
+            String defaultStyleOfRow = createdPageWithFlexTable.getElementAttribute(createdPageWithFlexTable.tableStyleAttributeToGetTableHeight,"style");
+            Assert.assertNotEquals(defaultRowSize,updatedRowSize);
+
+            String[] styleParts = defaultStyleOfRow.split("height:");
+            String heightValue = styleParts[1].split(";")[0].trim();
+            Assert.assertEquals(heightValue,"1000px");
+        }
+        else {
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.rowPerPageDropDown,"1");
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.tableHeightDropDown,"1000px");
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+
+            getDriver().get(PageUrl);
+            Thread.sleep(3000);
+            List<WebElement> updatedNameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+            int updatedRowSize = updatedNameElements.size();
+            String defaultStyleOfRow = createdPageWithFlexTable.getElementAttribute(createdPageWithFlexTable.tableStyleAttributeToGetTableHeight,"style");
+            Assert.assertNotEquals(defaultRowSize,updatedRowSize);
+            String[] styleParts = defaultStyleOfRow.split("height:");
+            String heightValue = styleParts[1].split(";")[0].trim();
+            Assert.assertEquals(heightValue,"1000px");
+
+        }
     }
 
+
+}
 

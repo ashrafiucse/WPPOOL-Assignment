@@ -18,5 +18,5 @@ public class CreatedPageWithFlexTable extends BasePage {
     public By secondPaginationNumber = By.xpath("//a[@data-dt-idx='2']");
     public By firstRowFirstColumnData = By.xpath("(//tr//td//div)[1]");
     public By firstRowSecondColumnData = By.xpath("(//tr//td//div)[2]");
-
+    public By tableStyleAttributeToGetTableHeight = By.xpath("//div[@class='dataTables_scrollBody']");
 }
