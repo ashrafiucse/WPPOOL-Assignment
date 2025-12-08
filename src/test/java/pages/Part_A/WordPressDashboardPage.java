@@ -11,5 +11,5 @@ public class WordPressDashboardPage extends BasePage {
     public By dashboardHomeButton = By.xpath("//a[contains(text(),'Home') and contains(@href,'index.php')]");
     public By pluginsMenu = By.xpath("//a[@href='plugins.php']//div[contains(text(),'Plugins')]");
     public By flexTableMenu = By.xpath("//div[contains(text(),'FlexTable') and contains(@class,'wp-menu-name')]");
-
+    public By pagesMenu = By.xpath("//a[contains(@href,'post_type=page')]//div[contains(text(),'Pages')]");
 }
