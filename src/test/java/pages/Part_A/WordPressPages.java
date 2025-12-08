@@ -19,7 +19,7 @@ public class WordPressPages extends BasePage {
     public By modalCloseButton = By.xpath("//button[@aria-label='Close']");
     public By blockInserterButton = By.xpath("//button[@id=':r1:']");
     public By blockSearchField = By.xpath("//input[@id='components-search-control-0']");
-    public By shortCodeBlockToSelect = By.xpath("//span[@data-wp-component='Truncate' and contains(text(),'Shortcode')]");
+    public By shortCodeBlockToSelect = By.xpath("//button[contains(@class, 'editor-block-list-item-shortcode')]");
     public By shortCodeInputFieldToCreatePage = By.xpath("//textarea[@id='blocks-shortcode-input-0']");
     public By publishButton = By.xpath("//button[contains(text(),'Publish')]");
     public By confirmPublishButton = By.xpath("(//button[@aria-disabled='false' and contains(text(),'Publish')])[2]");

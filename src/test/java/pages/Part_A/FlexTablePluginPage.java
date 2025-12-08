@@ -46,11 +46,8 @@ public class FlexTablePluginPage extends BasePage {
     public By showTitleToggle = By.xpath("//input[@id='show-title']");
     public By showDescriptionToggle = By.xpath("//input[@id='show-description']");
     public By saveChangesButtonToSaveCustomization = By.xpath("//button[contains(text(),'Save changes')]");
-    // New locators for table verification
-    public By frontendTableContainer = By.cssSelector(".gswpts-table-container");
-    public By frontendTableRows = By.cssSelector(".gswpts-table-container tr");
-    public By frontendTableHeaders = By.cssSelector(".gswpts-table-container th");
-    public By frontendTableCells = By.cssSelector(".gswpts-table-container td");
+    public By showEntryInfoToggle = By.xpath("//input[@id='hide-entry-info']");
+    public By showPaginationToggle = By.xpath("//input[@id='hide-pagination']");
 
     public void createNewTableWithGoogleSheet(String tableTitle, String tableDescription) {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);

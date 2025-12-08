@@ -155,8 +155,6 @@ public class FlexTablePluginTest extends BaseTest {
         shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
         String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
 
-        String wpURL = getDriver().getCurrentUrl();
-        //System.out.println("WP URL: " + wpURL);
         getDriver().get(PageUrl);
         By titleInPage = wordPressPages.getElementThroughTagAndText("h3",title);
         By descriptionInPage = wordPressPages.getElementThroughTagAndText("p",description);
@@ -182,6 +180,62 @@ public class FlexTablePluginTest extends BaseTest {
         By descriptionInPageVisible = wordPressPages.getElementThroughTagAndText("p",description);
         Assert.assertTrue(wordPressPages.isElementVisible(titleInPageVisible));
         Assert.assertTrue(wordPressPages.isElementVisible(descriptionInPageVisible));
+    }
+
+    @Test(priority = 6, description = "Enable Entry Info & Pagination")
+    public void verifyEntryInfoDisplayCorrectlyAndPaginationFunctional() {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+        getDriver().get(PageUrl);
+
+        Assert.assertFalse(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.entryInfo));
+        Assert.assertFalse(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstPaginationNumber));
+
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        By tableEdit = flexTablePluginPage.getTableEditTag(title);
+        flexTablePluginPage.clickOnElement(tableEdit);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableCustomizationMenu);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showEntryInfoToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showPaginationToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+
+        getDriver().get(PageUrl);
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.entryInfo));
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstPaginationNumber));
+
+        boolean isNextPageAvailable = createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.secondPaginationNumber);
+        if(isNextPageAvailable) {
+            String firstPageName = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowFirstColumnData);
+            String firstPageId = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowSecondColumnData);
+
+            createdPageWithFlexTable.clickOnElement(createdPageWithFlexTable.secondPaginationNumber);
+
+            String secondPageName = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowFirstColumnData);
+            String secondPageId = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowSecondColumnData);
+
+            Assert.assertNotEquals(firstPageName, secondPageName);
+            Assert.assertNotEquals(firstPageId, secondPageId);
+        }
+        else {
+            System.out.println("Only 1 Page Available!");
+        }
     }
 
 
