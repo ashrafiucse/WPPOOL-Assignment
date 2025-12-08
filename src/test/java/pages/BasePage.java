@@ -13,8 +13,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
+import utilities.ConfigManager;
 
 import static utilities.DriverSetup.getDriver;
 
@@ -1662,5 +1665,102 @@ public class BasePage {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // ---------- Google Sheets and CSV Utilities ----------
+
+    /**
+     * Convert Google Sheet URL to CSV export URL
+     */
+    public String convertGoogleSheetToCsvUrl(String googleSheetUrl) {
+        try {
+            // Extract sheet ID from Google Sheets URL
+            Pattern pattern = Pattern.compile("/d/([a-zA-Z0-9-_]+)");
+            Matcher matcher = pattern.matcher(googleSheetUrl);
+            
+            if (matcher.find()) {
+                String sheetId = matcher.group(1);
+                return "https://docs.google.com/spreadsheets/d/" + sheetId + "/export?format=csv";
+            }
+            return null;
+        } catch (Exception e) {
+            logError("Failed to convert Google Sheet URL to CSV", e);
+            return null;
+        }
+    }
+
+    /**
+     * Read Google Sheets data from environment
+     */
+    public List<List<String>> readGoogleSheetFromEnv() {
+        try {
+            String googleSheetUrl = ConfigManager.get("GOOGLE_SHEET_LINK");
+            if (googleSheetUrl == null || googleSheetUrl.trim().isEmpty()) {
+                logError("GOOGLE_SHEET_LINK not found in environment variables", null);
+                return new ArrayList<>();
+            }
+            
+            String csvUrl = convertGoogleSheetToCsvUrl(googleSheetUrl);
+            if (csvUrl == null) {
+                logError("Failed to convert Google Sheet URL to CSV", null);
+                return new ArrayList<>();
+            }
+            
+            return readCsvFromUrl(csvUrl);
+        } catch (Exception e) {
+            logError("Failed to read Google Sheet from environment", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get specific cell by row and column index
+     */
+    public String getCell(List<List<String>> csvData, int rowIndex, int colIndex) {
+        if (csvData != null && rowIndex < csvData.size() && colIndex < csvData.get(rowIndex).size()) {
+            return csvData.get(rowIndex).get(colIndex);
+        }
+        return null;
+    }
+
+    /**
+     * Get entire row by index
+     */
+    public List<String> getRow(List<List<String>> csvData, int rowIndex) {
+        if (csvData != null && rowIndex < csvData.size()) {
+            return csvData.get(rowIndex);
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Get entire column by index
+     */
+    public List<String> getColumn(List<List<String>> csvData, int colIndex) {
+        List<String> column = new ArrayList<>();
+        
+        if (csvData != null) {
+            for (List<String> row : csvData) {
+                if (colIndex < row.size()) {
+                    column.add(row.get(colIndex));
+                }
+            }
+        }
+        
+        return column;
+    }
+
+    /**
+     * Get first column data
+     */
+    public List<String> getFirstColumn(List<List<String>> csvData) {
+        return getColumn(csvData, 0);
+    }
+
+    /**
+     * Get first row data
+     */
+    public List<String> getFirstRow(List<List<String>> csvData) {
+        return getRow(csvData, 0);
     }
 }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class FlexTablePluginPage extends BasePage {
     
@@ -349,4 +350,11 @@ public class FlexTablePluginPage extends BasePage {
 //    public String getEnv(String key) {
 //        return ConfigManager.get(key);
 //    }
+
+    public List<List<String>> getCsvData() throws Exception {
+        Dotenv dotenv = Dotenv.configure().load();
+        String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
+        String csvUrl = convertGoogleSheetToCsvUrl(googleSheetURL);
+        return readCsvFromUrl(csvUrl);
+    }
 }

@@ -14,6 +14,7 @@ import utilities.WpCliHelper;
 import utilities.WpCliUtils;
 import testcases.BaseTest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static utilities.DriverSetup.getDriver;
@@ -27,6 +28,7 @@ public class FlexTablePluginTest extends BaseTest {
     WordPressPluginsPage wordPressPluginsPage = new WordPressPluginsPage(driver);
     FlexTablePluginPage flexTablePluginPage = new FlexTablePluginPage(driver);
     WordPressPages wordPressPages = new WordPressPages(driver);
+    CreatedPageWithFlexTable createdPageWithFlexTable = new CreatedPageWithFlexTable(driver);
     Faker faker = new Faker();
 
     @BeforeMethod
@@ -77,15 +79,16 @@ public class FlexTablePluginTest extends BaseTest {
                 wordPressPluginsPage.searchAndPressEnter(wordPressPluginsPage.installedPluginSearchField,"FlexTable");
                 boolean isActivated = wordPressPluginsPage.isElementVisible(wordPressPluginsPage.flexTableDeactivateLink);
                 Assert.assertTrue(isActivated);
-            }
         }
     }
+}
 
-    @Test(priority = 2, description = "Navigate to FlexTable Dashboard", 
-          dependsOnMethods = {"verifyFlexTablePluginActivation"})
+
+    @Test(priority = 2, description = "Navigate to FlexTable Dashboard",
+            dependsOnMethods = {"verifyFlexTablePluginActivation"})
     public void navigateToFlexTableDashboard() {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-        
+
         boolean isCreateButtonVisible = flexTablePluginPage.isElementVisible(flexTablePluginPage.createNewTableButton);
         Assert.assertTrue(isCreateButtonVisible, "FlexTable Dashboard did not load correctly");
     }
@@ -136,16 +139,18 @@ public class FlexTablePluginTest extends BaseTest {
         }
     }
 
-    @Test(priority = 8, description = "Verify Table Display Using Shortcode with WP-CLI")
+    @Test(priority = 4, description = "Verify Table Display Using Shortcode with WP-CLI",
+            dependsOnMethods = {"verifyNewTableCreationWithGoogleSheet"})
     public void verifyTableDisplayUsingShortcode() throws Exception {
-        
+        // 1. Get CSV data from Google Sheets
+        List<List<String>> csvData = flexTablePluginPage.getCsvData();
+
         // Navigate to FlexTable Dashboard
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-        
+
         // Get the shortcode from the first table
         String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
         shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
-        System.out.println("Short Code = " + shortCode);
 
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.pagesMenu);
         wordPressPages.clickOnElement(wordPressPages.addPageButton);
@@ -154,22 +159,27 @@ public class FlexTablePluginTest extends BaseTest {
         if(isModalOpened) {
             wordPressPages.clickOnElement(wordPressPages.modalCloseButton);
             String pageTitle = faker.commerce().productName();
-          //  wordPressPages.sendKeysText(wordPressPages.pageTitleField,pageTitle);
+            //  wordPressPages.sendKeysText(wordPressPages.pageTitleField,pageTitle);
             wordPressPages.typeIntoRichTextEditor(wordPressPages.pageTitleField,pageTitle);
             wordPressPages.clickOnElement(wordPressPages.blockInserterButton);
             wordPressPages.sendKeysText(wordPressPages.blockSearchField,"ShortCode");
             wordPressPages.clickOnElement(wordPressPages.shortCodeBlockToSelect);
             wordPressPages.typeIntoRichTextEditor(wordPressPages.shortCodeInputFieldToCreatePage,shortCode);
             wordPressPages.clickOnElement(wordPressPages.publishButton);
-            System.out.println(wordPressPages.isElementVisible(wordPressPages.confirmPublishButton));
             wordPressPages.clickOnElement(wordPressPages.confirmPublishButton);
 
             String PageUrl = wordPressPages.getElementAttribute(wordPressPages.viewPageButton,"href");
             getDriver().get(PageUrl);
-            Thread.sleep(4000);
 
+            Thread.sleep(3000);
+            List<WebElement> nameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.NameColumn);
+            for(int i=0; i<nameElements.size(); i++) {
+                String text = nameElements.get(i).getText();
+                Assert.assertEquals(text, csvData.get(i+1).get(0));
+            }
         }
 
     }
-
 }
+
+

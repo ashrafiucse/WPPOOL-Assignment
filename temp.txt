@@ -1,0 +1,4 @@
+"public String getEnv(String key) {"  
+"        return ConfigManager.get(key);"  
+"    }"  
+"}"  
