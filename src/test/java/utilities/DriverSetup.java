@@ -98,11 +98,19 @@ public class DriverSetup {
     }
 
     public static String getCurrentBrowser() {
-        return BROWSER_NAME.get();
+        String browser = BROWSER_NAME.get();
+        if (browser == null) {
+            browser = System.getProperty("browser", "chrome");
+        }
+        return browser;
     }
 
     public static Boolean isHeadless() {
-        return HEADLESS_MODE.get();
+        Boolean headless = HEADLESS_MODE.get();
+        if (headless == null) {
+            headless = Boolean.parseBoolean(System.getProperty("headless", "false"));
+        }
+        return headless;
     }
 
     public static void quitDriver() {
@@ -222,20 +230,40 @@ public class DriverSetup {
 
         FirefoxOptions options = new FirefoxOptions();
 
-        // Firefox options for stability
+        // Enhanced Firefox options for performance and stability
         options.addPreference("dom.webnotifications.enabled", false);
         options.addPreference("media.volume_scale", "0.0");
-
-        // Additional stability preferences
+        options.addPreference("media.autoplay.default", 5); // Block autoplay
+        options.addPreference("permissions.default.image", 1); // Load images normally
+        options.addPreference("dom.ipc.plugins.enabled", false); // Disable plugins for performance
+        options.addPreference("extensions.update.enabled", false); // Disable extension updates
+        options.addPreference("app.update.enabled", false); // Disable browser updates
+        
+        // Performance optimizations
         options.addPreference("browser.cache.disk.enable", false);
         options.addPreference("browser.cache.memory.enable", false);
         options.addPreference("browser.cache.offline.enable", false);
         options.addPreference("network.http.use-cache", false);
+        options.addPreference("network.http.pipelining", true);
+        options.addPreference("network.http.proxy.pipelining", true);
+        options.addPreference("network.http.pipelining.maxrequests", 8);
+        options.addPreference("content.notify.interval", 500);
+        options.addPreference("content.notify.ontimer", true);
+        options.addPreference("content.switch.threshold", 500);
+        options.addPreference("browser.sessionstore.interval", 999999);
+        
+        // Security and privacy settings
+        options.addPreference("privacy.trackingprotection.enabled", false); // Disable for testing
+        options.addPreference("security.fileuri.strict_origin_policy", false);
+        options.addPreference("signon.rememberSignons", false);
 
         if (headless) {
             options.addArguments("--headless");
             options.addArguments("--width=1920");
             options.addArguments("--height=1080");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
         }
 
         return new FirefoxDriver(options);
@@ -293,7 +321,7 @@ public class DriverSetup {
 
         EdgeOptions options = new EdgeOptions();
 
-        // Common Edge options for stability
+        // Enhanced Edge options for performance and stability
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-web-security");
@@ -304,6 +332,28 @@ public class DriverSetup {
                 "excludeSwitches",
                 new String[] { "enable-automation" }
         );
+        
+        // Performance optimizations
+        options.addArguments("--disable-features=VizDisplayCompositor,TranslateUI,BlinkGenPropertyTrees");
+        options.addArguments("--disable-ipc-flooding-protection");
+        options.addArguments("--disable-logging");
+        options.addArguments("--disable-extensions-except");
+        options.addArguments("--disable-component-extensions-with-background-pages");
+        options.addArguments("--disable-background-timer-throttling");
+        options.addArguments("--disable-backgrounding-occluded-windows");
+        options.addArguments("--disable-renderer-backgrounding");
+        options.addArguments("--disable-features=TranslateUI");
+        options.addArguments("--disable-ipc-flooding-protection");
+        options.addArguments("--password-store=basic");
+        options.addArguments("--use-mock-keychain");
+        
+        // Memory and CPU optimizations
+        options.addArguments("--max_old_space_size=4096");
+        options.addArguments("--optimize-for-size");
+        options.addArguments("--disable-software-rasterizer");
+        options.addArguments("--disable-accelerated-2d-canvas");
+        options.addArguments("--disable-accelerated-jpeg-decoding");
+        options.addArguments("--disable-accelerated-video-decode");
 
         if (headless) {
             options.addArguments("--headless=new");
@@ -313,6 +363,13 @@ public class DriverSetup {
             options.addArguments("--disable-logging");
             options.addArguments("--no-first-run");
             options.addArguments("--disable-default-apps");
+            options.addArguments("--disable-dev-tools");
+            options.addArguments("--disable-features=VizDisplayCompositor");
+            options.addArguments("--disable-background-networking");
+            options.addArguments("--disable-default-apps");
+            options.addArguments("--disable-sync");
+            options.addArguments("--metrics-recording-only");
+            options.addArguments("--no-default-browser-check");
         }
 
         return new EdgeDriver(options);

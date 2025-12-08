@@ -1667,8 +1667,7 @@ public class BasePage {
         }
     }
 
-    // ---------- Google Sheets and CSV Utilities ----------
-
+    // ---------- Simple Utilities ----------
     /**
      * Convert Google Sheet URL to CSV export URL
      */
@@ -1677,7 +1676,7 @@ public class BasePage {
             // Extract sheet ID from Google Sheets URL
             Pattern pattern = Pattern.compile("/d/([a-zA-Z0-9-_]+)");
             Matcher matcher = pattern.matcher(googleSheetUrl);
-            
+             
             if (matcher.find()) {
                 String sheetId = matcher.group(1);
                 return "https://docs.google.com/spreadsheets/d/" + sheetId + "/export?format=csv";

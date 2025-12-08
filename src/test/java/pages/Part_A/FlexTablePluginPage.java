@@ -10,7 +10,6 @@ import org.testng.Assert;
 import utilities.WpCliUtils;
 import utilities.ConfigManager;
 import pages.BasePage;
-import static utilities.DriverSetup.getDriver;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -24,11 +23,14 @@ import java.util.regex.Pattern;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class FlexTablePluginPage extends BasePage {
-    WordPressDashboardPage wordPressDashboardPage = new WordPressDashboardPage(getDriver());
+    private final WebDriver driver;
+    WordPressDashboardPage wordPressDashboardPage;
     Faker faker = new Faker();
 
     public FlexTablePluginPage(WebDriver driver) {
         super(driver);
+        this.driver = driver;
+        this.wordPressDashboardPage = new WordPressDashboardPage(driver);
     }
     
     // Existing locators
