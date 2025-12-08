@@ -303,6 +303,37 @@ public class FlexTablePluginTest extends BaseTest {
         }
     }
 
+    @Test(priority = 8, description = "Delete the Table and Verify Frontend Removal")
+    public void verifyThatAfterDeleteTableProperMessageDisplayedInFrontEnd() {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+        getDriver().get(PageUrl);
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstRowFirstColumnData));
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableDeleteButton);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.modalDeleteButton);
+        getDriver().get(PageUrl);
+        Assert.assertFalse(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstRowFirstColumnData));
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.deletedTableMsg));
+
+    }
+
 
 }
 

@@ -51,7 +51,8 @@ public class FlexTablePluginPage extends BasePage {
     public By tableStylingButton = By.xpath("//button[contains(text(),'Styling')]");
     public By rowPerPageDropDown = By.xpath("//select[@id='rows-per-page']");
     public By tableHeightDropDown = By.xpath("//select[@id='table_height']");
-
+    public By tableDeleteButton = By.xpath("//button[@class='table-delete']");
+    public By modalDeleteButton = By.xpath("//button[contains(@class,'confirm-button') and contains(text(),'Delete')]");
     public void createNewTableWithGoogleSheet(String tableTitle, String tableDescription) {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
         boolean isExistingTableAvailable = isElementVisible(existingTableSearchField);
