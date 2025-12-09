@@ -25,12 +25,6 @@ public class WordPressLoginTest extends BaseTest {
         // Handle headless mode rendering issues
         handleHeadlessModeIssues();
         
-        // Handle headless mode rendering issues
-        handleHeadlessModeIssues();
-        
-        // Handle headless mode rendering issues
-        handleHeadlessModeIssues();
-        
         // Verify dashboard page locators are visible with enhanced checks for headless mode
         boolean isHomeButtonVisible = dashboardPage.isDashboardHomeVisible();
         boolean isPluginsMenuVisible = dashboardPage.isPluginsMenuVisible();

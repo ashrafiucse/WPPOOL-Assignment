@@ -56,7 +56,7 @@ public class FlexTablePluginPage extends BasePage {
     public By tableDeleteButton = By.xpath("//button[@class='table-delete']");
     public By modalDeleteButton = By.xpath("//button[contains(@class,'confirm-button') and contains(text(),'Delete')]");
     public void createNewTableWithGoogleSheet(String tableTitle, String tableDescription) {
-        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        wordPressDashboardPage.clickFlexTableMenu();
         boolean isExistingTableAvailable = isElementVisible(existingTableSearchField);
         if (isExistingTableAvailable) {
             boolean isCreateNewTableButtonVisible = isElementVisible(createNewTableButton);
@@ -73,7 +73,7 @@ public class FlexTablePluginPage extends BasePage {
                 sendKeysText(tableTitleField, tableTitle);
                 sendKeysText(tableDescriptionField, tableDescription);
                 clickOnElement(saveChangesButton);
-                clickOnElement(wordPressDashboardPage.flexTableMenu);
+                wordPressDashboardPage.clickFlexTableMenu();
                 By newlyAddedTableTitle = getElementThroughTagAndText("h4", tableTitle);
                 Assert.assertEquals(getElementText(newlyAddedTableTitle), tableTitle);
             }
@@ -90,7 +90,7 @@ public class FlexTablePluginPage extends BasePage {
                 sendKeysText(tableTitleField, tableTitle);
                 sendKeysText(tableDescriptionField, tableDescription);
                 clickOnElement(saveChangesButton);
-                clickOnElement(wordPressDashboardPage.flexTableMenu);
+                wordPressDashboardPage.clickFlexTableMenu();
                 By newlyAddedTableTitle = getElementThroughTagAndText("h4", tableTitle);
                 Assert.assertEquals(getElementText(newlyAddedTableTitle), tableTitle);
             }

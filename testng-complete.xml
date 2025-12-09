@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Complete WordPress FlexTable Test Suite" parallel="tests" thread-count="1">
+    
+    <test name="WordPress Login Tests">
+        <classes>
+            <class name="testcases.Part_A.WordPressLoginTest">
+                <methods>
+                    <include name="verifyWordpressLogin"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="FlexTable Plugin Tests">
+        <classes>
+            <class name="testcases.Part_A.FlexTablePluginTest">
+                <methods>
+                    <include name="verifyFlexTablePluginActivation"/>
+                    <include name="navigateToFlexTableDashboard"/>
+                    <include name="verifyNewTableCreationWithGoogleSheet"/>
+                    <include name="verifyTableDisplayUsingShortcode"/>
+                    <include name="verifyShowTableTableAndShowTableDescriptionDisplayProperly"/>
+                    <include name="verifyEntryInfoDisplayCorrectlyAndPaginationFunctional"/>
+                    <include name="verifyUpdatingRowPerPageAndTableHeightWorksProperly"/>
+                    <include name="verifyThatAfterDeleteTableProperMessageDisplayedInFrontEnd"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="Alpine.js Diagnostic Tests">
+        <classes>
+            <class name="testcases.Part_A.AlpineJsDiagnosticTest">
+                <methods>
+                    <include name="verifyAlpineJsFunctionality"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="Simple Alpine.js Diagnostic Tests">
+        <classes>
+            <class name="testcases.Part_A.SimpleAlpineJsDiagnosticTest">
+                <methods>
+                    <include name="verifySimpleAlpineJsFunctionality"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+</suite>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Complete WordPress FlexTable Test Suite" parallel="tests" thread-count="1">
+    
+    <test name="WordPress Login and Plugin Tests">
+        <classes>
+            <class name="testcases.Part_A.WordPressLoginTest">
+                <methods>
+                    <include name="verifyWordpressLogin"/>
+                </methods>
+            </class>
+            <class name="testcases.Part_A.FlexTablePluginTest">
+                <methods>
+                    <include name="verifyFlexTablePluginActivation"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="FlexTable Dashboard and Table Creation Tests">
+        <classes>
+            <class name="testcases.Part_A.FlexTablePluginTest">
+                <methods>
+                    <include name="navigateToFlexTableDashboard"/>
+                    <include name="verifyNewTableCreationWithGoogleSheet"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="FlexTable Display and Shortcode Tests">
+        <classes>
+            <class name="testcases.Part_A.FlexTablePluginTest">
+                <methods>
+                    <include name="verifyTableDisplayUsingShortcode"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="FlexTable Customization Tests">
+        <classes>
+            <class name="testcases.Part_A.FlexTablePluginTest">
+                <methods>
+                    <include name="verifyShowTableTableAndShowTableDescriptionDisplayProperly"/>
+                    <include name="verifyEntryInfoDisplayCorrectlyAndPaginationFunctional"/>
+                    <include name="verifyUpdatingRowPerPageAndTableHeightWorksProperly"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="FlexTable Deletion Tests">
+        <classes>
+            <class name="testcases.Part_A.FlexTablePluginTest">
+                <methods>
+                    <include name="verifyThatAfterDeleteTableProperMessageDisplayedInFrontEnd"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="Alpine.js Diagnostic Tests">
+        <classes>
+            <class name="testcases.Part_A.AlpineJsDiagnosticTest">
+                <methods>
+                    <include name="verifyAlpineJsFunctionality"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <test name="Simple Alpine.js Diagnostic Tests">
+        <classes>
+            <class name="testcases.Part_A.SimpleAlpineJsDiagnosticTest">
+                <methods>
+                    <include name="verifySimpleAlpineJsFunctionality"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+</suite>

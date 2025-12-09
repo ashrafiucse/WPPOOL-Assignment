@@ -190,6 +190,14 @@ public class DriverSetup {
             options.addArguments("--disable-features=TranslateUI");
             options.addArguments("--password-store=basic");
             options.addArguments("--use-mock-keychain");
+            // Additional headless mode fixes for WordPress
+            options.addArguments("--force-device-scale-factor=1");
+            options.addArguments("--disable-features=TranslateUI,VizDisplayCompositor");
+            options.addArguments("--disable-ipc-flooding-protection");
+            options.addArguments("--disable-software-rasterizer");
+            options.addArguments("--disable-accelerated-2d-canvas");
+            options.addArguments("--disable-accelerated-jpeg-decoding");
+            options.addArguments("--disable-accelerated-video-decode");
         }
 
         return new ChromeDriver(options);
