@@ -1,5 +1,6 @@
 package testcases;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
@@ -76,6 +77,25 @@ public class BaseTest {
         } catch (Exception ignored) {
             // Silent fallback
         }
+    }
+    
+public String getHomepageUrl() {
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+        
+        // Get WP_URL from environment
+        String wpUrl = dotenv.get("WP_URL");
+        
+        // Trim /wp-admin suffix if present (case-insensitive)
+        if (wpUrl != null) {
+            return wpUrl.replaceAll("(?i)/wp-admin/?$", "");
+        }
+        return null;
+    }
+    
+    public String getShopUrl() {
+        String homepageUrl = getHomepageUrl();
+        return homepageUrl != null ? homepageUrl + "/shop" : null;
     }
     
     public void cleanup() {
