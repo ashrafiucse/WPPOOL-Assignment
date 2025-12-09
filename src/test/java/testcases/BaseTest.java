@@ -97,6 +97,12 @@ public String getHomepageUrl() {
         String homepageUrl = getHomepageUrl();
         return homepageUrl != null ? homepageUrl + "/shop" : null;
     }
+
+    public String getMyAccountUrl() {
+        String homepageUrl = getHomepageUrl();
+        return homepageUrl != null ? homepageUrl + "/my-account" : null;
+    }
+
     
     public void cleanup() {
         
