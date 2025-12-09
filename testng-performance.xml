@@ -6,8 +6,7 @@
         <listener class-name="utilities.CleanTestListener"/>
     </listeners>
     
-    <!-- Performance monitoring enabled -->
-    <parameter name="performanceMonitoring" value="true"/>
+
     
     <test name="Performance Tests">
         <parameter name="browser" value="chrome"/>

@@ -8,50 +8,31 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import utilities.DriverSetup;
-import utilities.PerformanceMonitor;
 
 public class BaseTest {
     
     protected WebDriver driver;
 
-    @BeforeMethod(alwaysRun = true)
-    @Parameters({ "browser", "headless", "performanceMonitoring" })
+@BeforeMethod(alwaysRun = true)
+    @Parameters({ "browser", "headless" })
     public void setup(
         @Optional("chrome") String browser,
-        @Optional("false") String headless,
-        @Optional("false") String performanceMonitoring
+        @Optional("false") String headless
     ) {
-        // Start performance monitoring
-        if (Boolean.parseBoolean(performanceMonitoring)) {
-            PerformanceMonitor.startTimer("test_setup");
-            PerformanceMonitor.recordMemoryUsage("setup_start");
-        }
-        
         // Initialize driver with parameterized browser and headless mode
         DriverSetup.initDriver(browser, Boolean.parseBoolean(headless));
         driver = DriverSetup.getDriver();
-
-        // Record setup completion
-        if (Boolean.parseBoolean(performanceMonitoring)) {
-            PerformanceMonitor.endTimer("test_setup");
-            PerformanceMonitor.recordMemoryUsage("setup_complete");
-        }
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(ITestResult result) {
         try {
-            // Record test completion metrics safely
-            PerformanceMonitor.recordMetric("test_result", result.getStatus());
-            PerformanceMonitor.recordMetric("test_name", result.getName());
             
             // Get browser info safely
             String browser = DriverSetup.getCurrentBrowser();
             if (browser != null) {
-                PerformanceMonitor.recordMetric("browser", browser);
             }
             
-            PerformanceMonitor.recordMemoryUsage("test_complete");
         } catch (Exception e) {
             // Silently ignore performance monitoring errors
         }
@@ -98,12 +79,9 @@ public class BaseTest {
     }
     
     public void cleanup() {
-        // Performance monitoring is silent - no report generation in terminal
         
         DriverSetup.quitDriver(); // Quit browser & clear ThreadLocal
         driver = null;
         
-        // Clear performance metrics for this thread
-        PerformanceMonitor.clearMetrics();
     }
 }

@@ -6,8 +6,7 @@
         <listener class-name="utilities.CleanTestListener"/>
     </listeners>
     
-    <!-- Parameter for performance monitoring -->
-    <parameter name="performanceMonitoring" value="true"/>
+
     
     <!-- Test isolation with separate browser instances -->
     <test name="WordPress Login Test - Chrome">
