@@ -1689,6 +1689,29 @@ public class BasePage {
     }
 
     /**
+     * Extract table ID from FlexTable edit URL
+     * @param editUrl URL in format: ...#/tables/edit/41
+     * @return Table ID as String, or null if not found
+     */
+    public String extractTableIdFromEditUrl(String editUrl) {
+        try {
+            Pattern pattern = Pattern.compile("/edit/(\\d+)");
+            Matcher matcher = pattern.matcher(editUrl);
+            
+            if (matcher.find()) {
+                String tableId = matcher.group(1);
+                logInfo("Successfully extracted table ID: " + tableId + " from URL: " + editUrl);
+                return tableId;
+            }
+            logWarning("No table ID found in edit URL: " + editUrl);
+            return null;
+        } catch (Exception e) {
+            logError("Failed to extract table ID from edit URL", e);
+            return null;
+        }
+    }
+
+    /**
      * Read Google Sheets data from environment
      */
     public List<List<String>> readGoogleSheetFromEnv() {

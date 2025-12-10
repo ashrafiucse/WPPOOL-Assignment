@@ -56,59 +56,59 @@ public class FlexTablePluginPage extends BasePage {
     public By tableDeleteButton = By.xpath("//button[@class='table-delete']");
     public By modalDeleteButton = By.xpath("//button[contains(@class,'confirm-button') and contains(text(),'Delete')]");
     public void createNewTableWithGoogleSheet(String tableTitle, String tableDescription) {
-        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-        boolean isExistingTableAvailable = isElementVisible(existingTableSearchField);
-        if (isExistingTableAvailable) {
-            boolean isCreateNewTableButtonVisible = isElementVisible(createNewTableButton);
-            if (isCreateNewTableButtonVisible) {
-                clickOnElement(createNewTableButton);
-
-                // Load .env file directly
-                Dotenv dotenv = Dotenv.configure().load();
-
-                String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-                sendKeysText(googleSheetInputField, googleSheetURL);
-                clickOnElement(createTableFromUrlButton);
-
-                sendKeysText(tableTitleField, tableTitle);
-                sendKeysText(tableDescriptionField, tableDescription);
-                clickOnElement(saveChangesButton);
-                clickOnElement(wordPressDashboardPage.flexTableMenu);
-                By newlyAddedTableTitle = getElementThroughTagAndText("h4", tableTitle);
-                Assert.assertEquals(getElementText(newlyAddedTableTitle), tableTitle);
-            }
-            else {
-                clickOnElement(createNewTableLink);
-
-                // Load .env file directly
-                Dotenv dotenv = Dotenv.configure().load();
-
-                String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-                sendKeysText(googleSheetInputField, googleSheetURL);
-                clickOnElement(createTableFromUrlButton);
-
-                sendKeysText(tableTitleField, tableTitle);
-                sendKeysText(tableDescriptionField, tableDescription);
-                clickOnElement(saveChangesButton);
-                clickOnElement(wordPressDashboardPage.flexTableMenu);
-                By newlyAddedTableTitle = getElementThroughTagAndText("h4", tableTitle);
-                Assert.assertEquals(getElementText(newlyAddedTableTitle), tableTitle);
-            }
-        } else {
-            clickOnElement(createNewTableButton);
-
-            // Load .env file directly
-            Dotenv dotenv = Dotenv.configure().load();
-
-            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-            sendKeysText(googleSheetInputField, googleSheetURL);
-            clickOnElement(createTableFromUrlButton);
-
-            sendKeysText(tableTitleField, tableTitle);
-            sendKeysText(tableDescriptionField, tableDescription);
-            clickOnElement(saveChangesButton);
-            clickOnElement(wordPressDashboardPage.flexTableMenu);
-        }
+//        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+//        boolean isExistingTableAvailable = isElementVisible(existingTableSearchField);
+//        if (isExistingTableAvailable) {
+//            boolean isCreateNewTableButtonVisible = isElementVisible(createNewTableButton);
+//            if (isCreateNewTableButtonVisible) {
+//                clickOnElement(createNewTableButton);
+//
+//                // Load .env file directly
+//                Dotenv dotenv = Dotenv.configure().load();
+//
+//                String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
+//                sendKeysText(googleSheetInputField, googleSheetURL);
+//                clickOnElement(createTableFromUrlButton);
+//
+//                sendKeysText(tableTitleField, tableTitle);
+//                sendKeysText(tableDescriptionField, tableDescription);
+//                clickOnElement(saveChangesButton);
+//                clickOnElement(wordPressDashboardPage.flexTableMenu);
+//                By newlyAddedTableTitle = getElementThroughTagAndText("h4", tableTitle);
+//                Assert.assertEquals(getElementText(newlyAddedTableTitle), tableTitle);
+//            }
+//            else {
+//                clickOnElement(createNewTableLink);
+//
+//                // Load .env file directly
+//                Dotenv dotenv = Dotenv.configure().load();
+//
+//                String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
+//                sendKeysText(googleSheetInputField, googleSheetURL);
+//                clickOnElement(createTableFromUrlButton);
+//
+//                sendKeysText(tableTitleField, tableTitle);
+//                sendKeysText(tableDescriptionField, tableDescription);
+//                clickOnElement(saveChangesButton);
+//                clickOnElement(wordPressDashboardPage.flexTableMenu);
+//                By newlyAddedTableTitle = getElementThroughTagAndText("h4", tableTitle);
+//                Assert.assertEquals(getElementText(newlyAddedTableTitle), tableTitle);
+//            }
+//        } else {
+//            clickOnElement(createNewTableButton);
+//
+//            // Load .env file directly
+//            Dotenv dotenv = Dotenv.configure().load();
+//
+//            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
+//            sendKeysText(googleSheetInputField, googleSheetURL);
+//            clickOnElement(createTableFromUrlButton);
+//
+//            sendKeysText(tableTitleField, tableTitle);
+//            sendKeysText(tableDescriptionField, tableDescription);
+//            clickOnElement(saveChangesButton);
+//            clickOnElement(wordPressDashboardPage.flexTableMenu);
+//        }
     }
 
     public List<List<String>> getCsvData() throws Exception {
