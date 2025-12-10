@@ -6,11 +6,18 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.*;
+import java.net.*;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.json.JSONObject;
+import utilities.ConfigManager;
 
 import static utilities.DriverSetup.getDriver;
 
@@ -1070,5 +1077,689 @@ public class BasePage {
             System.out.println("Attribute check failed for locator: " + locator + " | " + e.getMessage());
             return false;
         }
+    }
+
+    // ---------- HTTP/REST API Utilities ----------
+
+    /**
+     * Send HTTP GET request and return response
+     */
+    public String sendGetRequest(String urlString) throws IOException {
+        return sendHttpRequest("GET", urlString, null, null);
+    }
+
+    /**
+     * Send HTTP POST request with JSON body
+     */
+    public String sendPostRequest(String urlString, String jsonBody) throws IOException {
+        return sendHttpRequest("POST", urlString, jsonBody, "application/json");
+    }
+
+    /**
+     * Send HTTP PUT request with JSON body
+     */
+    public String sendPutRequest(String urlString, String jsonBody) throws IOException {
+        return sendHttpRequest("PUT", urlString, jsonBody, "application/json");
+    }
+
+    /**
+     * Send HTTP DELETE request
+     */
+    public String sendDeleteRequest(String urlString) throws IOException {
+        return sendHttpRequest("DELETE", urlString, null, null);
+    }
+
+    /**
+     * Generic HTTP request method
+     */
+    private String sendHttpRequest(String method, String urlString, String body, String contentType) throws IOException {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(urlString);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod(method);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+            
+            if (contentType != null) {
+                connection.setRequestProperty("Content-Type", contentType);
+            }
+            
+            if (body != null) {
+                connection.setDoOutput(true);
+                try (OutputStream os = connection.getOutputStream()) {
+                    os.write(body.getBytes());
+                }
+            }
+            
+            int responseCode = connection.getResponseCode();
+            InputStream inputStream = (responseCode >= 200 && responseCode < 300) 
+                ? connection.getInputStream() 
+                : connection.getErrorStream();
+                
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                return response.toString();
+            }
+            
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    /**
+     * Get HTTP response code for URL
+     */
+    public int getResponseCode(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("HEAD");
+        connection.setConnectTimeout(5000);
+        int responseCode = connection.getResponseCode();
+        connection.disconnect();
+        return responseCode;
+    }
+
+    /**
+     * Check if URL is accessible
+     */
+    public boolean isUrlAccessible(String urlString) {
+        try {
+            int responseCode = getResponseCode(urlString);
+            return responseCode >= 200 && responseCode < 400;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // ---------- CSV Processing Utilities ----------
+
+    /**
+     * Parse CSV line into list of values
+     */
+    public List<String> parseCsvRow(String csvLine) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+        
+        for (int i = 0; i < csvLine.length(); i++) {
+            char c = csvLine.charAt(i);
+            
+            if (c == '"') {
+                if (inQuotes && i < csvLine.length() - 1 && csvLine.charAt(i + 1) == '"') {
+                    current.append('"');
+                    i++; // Skip next quote
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == ',' && !inQuotes) {
+                result.add(current.toString().trim());
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+        
+        result.add(current.toString().trim());
+        return result;
+    }
+
+    /**
+     * Read CSV data from URL
+     */
+    public List<List<String>> readCsvFromUrl(String csvUrl) throws IOException {
+        List<List<String>> data = new ArrayList<>();
+        
+        HttpURLConnection connection = (HttpURLConnection) new URL(csvUrl).openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(10000);
+        connection.setReadTimeout(10000);
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    data.add(parseCsvRow(line));
+                }
+            }
+        }
+        
+        return data;
+    }
+
+    /**
+     * Convert list of lists to CSV string
+     */
+    public String convertToCsv(List<List<String>> data) {
+        StringBuilder csv = new StringBuilder();
+        for (List<String> row : data) {
+            for (int i = 0; i < row.size(); i++) {
+                String value = row.get(i);
+                if (value.contains(",") || value.contains("\"")) {
+                    csv.append("\"").append(value.replace("\"", "\"\"")).append("\"");
+                } else {
+                    csv.append(value);
+                }
+                if (i < row.size() - 1) {
+                    csv.append(",");
+                }
+            }
+            csv.append("\n");
+        }
+        return csv.toString();
+    }
+
+    // ---------- Table Operations ----------
+
+    /**
+     * Extract table data as list of maps (header -> value)
+     */
+    public List<Map<String, String>> extractTableData(By tableLocator) {
+        List<Map<String, String>> tableData = new ArrayList<>();
+        
+        try {
+            WebElement table = waitForElementToBePresence(tableLocator);
+            List<WebElement> rows = table.findElements(By.tagName("tr"));
+            
+            if (rows.isEmpty()) {
+                return tableData;
+            }
+            
+            // Get headers from first row
+            List<WebElement> headerCells = rows.get(0).findElements(By.tagName("th"));
+            List<String> headers = new ArrayList<>();
+            
+            if (headerCells.isEmpty()) {
+                // If no th elements, use td from first row as headers
+                headerCells = rows.get(0).findElements(By.tagName("td"));
+            }
+            
+            for (WebElement headerCell : headerCells) {
+                headers.add(headerCell.getText().trim());
+            }
+            
+            // Extract data rows (skip header row)
+            for (int i = 1; i < rows.size(); i++) {
+                List<WebElement> cells = rows.get(i).findElements(By.tagName("td"));
+                Map<String, String> rowData = new LinkedHashMap<>();
+                
+                for (int j = 0; j < Math.min(headers.size(), cells.size()); j++) {
+                    String header = j < headers.size() ? headers.get(j) : "Column" + (j + 1);
+                    String value = cells.get(j).getText().trim();
+                    rowData.put(header, value);
+                }
+                
+                tableData.add(rowData);
+            }
+            
+        } catch (Exception e) {
+            logError("Failed to extract table data", e);
+        }
+        
+        return tableData;
+    }
+
+    /**
+     * Get table headers as list of strings
+     */
+    public List<String> getTableHeaders(By tableLocator) {
+        List<String> headers = new ArrayList<>();
+        
+        try {
+            WebElement table = waitForElementToBePresence(tableLocator);
+            List<WebElement> headerCells = table.findElements(By.tagName("th"));
+            
+            if (headerCells.isEmpty()) {
+                // Try first row's td elements as headers
+                List<WebElement> firstRow = table.findElements(By.cssSelector("tr:first-child td"));
+                for (WebElement cell : firstRow) {
+                    headers.add(cell.getText().trim());
+                }
+            } else {
+                for (WebElement headerCell : headerCells) {
+                    headers.add(headerCell.getText().trim());
+                }
+            }
+            
+        } catch (Exception e) {
+            logError("Failed to get table headers", e);
+        }
+        
+        return headers;
+    }
+
+    /**
+     * Get table row count
+     */
+    public int getTableRowCount(By tableLocator) {
+        try {
+            WebElement table = waitForElementToBePresence(tableLocator);
+            List<WebElement> rows = table.findElements(By.tagName("tr"));
+            return rows.size();
+        } catch (Exception e) {
+            logError("Failed to get table row count", e);
+            return 0;
+        }
+    }
+
+    /**
+     * Verify table contains specific text
+     */
+    public boolean verifyTableContains(By tableLocator, String searchText) {
+        try {
+            WebElement table = waitForElementToBePresence(tableLocator);
+            String tableText = table.getText();
+            return tableText.contains(searchText);
+        } catch (Exception e) {
+            logError("Failed to verify table contains text: " + searchText, e);
+            return false;
+        }
+    }
+
+    /**
+     * Compare table data with CSV data
+     */
+    public boolean compareTableWithCsv(By tableLocator, List<List<String>> csvData) {
+        try {
+            List<Map<String, String>> tableData = extractTableData(tableLocator);
+            
+            if (csvData.isEmpty() || tableData.isEmpty()) {
+                return false;
+            }
+            
+            // Compare first few rows for validation
+            int rowsToCompare = Math.min(5, Math.min(csvData.size(), tableData.size()));
+            
+            for (int i = 0; i < rowsToCompare; i++) {
+                List<String> csvRow = csvData.get(i);
+                Map<String, String> tableRow = tableData.get(i);
+                
+                // Compare values
+                int colIndex = 0;
+                for (String csvValue : csvRow) {
+                    if (colIndex < tableRow.size()) {
+                        String tableValue = tableRow.get(colIndex);
+                        if (!csvValue.trim().equals(tableValue.trim())) {
+                            logWarning("Data mismatch at row " + (i+1) + ", column " + (colIndex+1) + 
+                                      ". CSV: '" + csvValue + "', Table: '" + tableValue + "'");
+                        }
+                    }
+                    colIndex++;
+                }
+            }
+            
+            return true;
+            
+        } catch (Exception e) {
+            logError("Failed to compare table with CSV", e);
+            return false;
+        }
+    }
+
+    // ---------- URL and Validation Utilities ----------
+
+    /**
+     * Validate URL format
+     */
+    public boolean isValidUrl(String url) {
+        try {
+            new URL(url);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Extract parameters from URL
+     */
+    public Map<String, String> extractUrlParameters(String urlString) {
+        Map<String, String> params = new HashMap<>();
+        
+        try {
+            URL url = new URL(urlString);
+            String query = url.getQuery();
+            
+            if (query != null) {
+                String[] pairs = query.split("&");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split("=", 2);
+                    if (keyValue.length == 2) {
+                        params.put(keyValue[0], java.net.URLDecoder.decode(keyValue[1], "UTF-8"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logError("Failed to extract URL parameters", e);
+        }
+        
+        return params;
+    }
+
+    /**
+     * Build URL with parameters
+     */
+    public String buildUrlWithParams(String baseUrl, Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return baseUrl;
+        }
+        
+        StringBuilder url = new StringBuilder(baseUrl);
+        boolean firstParam = !baseUrl.contains("?");
+        
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (firstParam) {
+                url.append("?");
+                firstParam = false;
+            } else {
+                url.append("&");
+            }
+            
+            try {
+                url.append(java.net.URLEncoder.encode(entry.getKey(), "UTF-8"))
+                   .append("=")
+                   .append(java.net.URLEncoder.encode(entry.getValue(), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                url.append(entry.getKey()).append("=").append(entry.getValue());
+            }
+        }
+        
+        return url.toString();
+    }
+
+    /**
+     * Normalize URL (remove trailing slash, etc.)
+     */
+    public String normalizeUrl(String url) {
+        if (url == null) return "";
+        
+        String normalized = url.trim();
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        
+        return normalized;
+    }
+
+    // ---------- Enhanced Logging and Reporting ----------
+
+    /**
+     * Log info message with timestamp
+     */
+    public void logInfo(String message) {
+        String timestamp = java.time.LocalDateTime.now().toString();
+        System.out.println("[INFO " + timestamp + "] " + message);
+    }
+
+    /**
+     * Log error with exception
+     */
+    public void logError(String message, Throwable throwable) {
+        String timestamp = java.time.LocalDateTime.now().toString();
+        System.err.println("[ERROR " + timestamp + "] " + message);
+        if (throwable != null) {
+            throwable.printStackTrace();
+        }
+    }
+
+    /**
+     * Log warning message
+     */
+    public void logWarning(String message) {
+        String timestamp = java.time.LocalDateTime.now().toString();
+        System.out.println("[WARN " + timestamp + "] " + message);
+    }
+
+    /**
+     * Log test step
+     */
+    public void logStep(String stepDescription) {
+        String timestamp = java.time.LocalDateTime.now().toString();
+        System.out.println("[STEP " + timestamp + "] " + stepDescription);
+    }
+
+    /**
+     * Log API call details
+     */
+    public void logApiCall(String method, String url, int responseCode, long responseTime) {
+        String timestamp = java.time.LocalDateTime.now().toString();
+        System.out.println("[API " + timestamp + "] " + method + " " + url + 
+                          " -> " + responseCode + " (" + responseTime + "ms)");
+    }
+
+    /**
+     * Attach screenshot to report (Allure integration)
+     */
+    public void attachScreenshotToReport(String description) {
+        try {
+            byte[] screenshot = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.BYTES);
+            io.qameta.allure.Allure.addAttachment(description, "image/png", new ByteArrayInputStream(screenshot), ".png");
+        } catch (Exception e) {
+            logError("Failed to attach screenshot to report", e);
+        }
+    }
+
+    /**
+     * Attach text content to report
+     */
+    public void attachTextToReport(String title, String content) {
+        try {
+            io.qameta.allure.Allure.addAttachment(title, "text/plain", content);
+        } catch (Exception e) {
+            logError("Failed to attach text to report", e);
+        }
+    }
+
+    /**
+     * Attach JSON to report
+     */
+    public void attachJsonToReport(String title, String jsonContent) {
+        try {
+            io.qameta.allure.Allure.addAttachment(title, "application/json", jsonContent);
+        } catch (Exception e) {
+            logError("Failed to attach JSON to report", e);
+        }
+    }
+
+    // ---------- Environment and Configuration ----------
+
+    /**
+     * Get environment variable with fallback
+     */
+    public String getEnvironmentVariable(String key, String defaultValue) {
+        String value = System.getenv(key);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Get environment variable
+     */
+    public String getEnvironmentVariable(String key) {
+        return System.getenv(key);
+    }
+
+    /**
+     * Check if environment variable is set
+     */
+    public boolean isEnvironmentSet(String key) {
+        return System.getenv(key) != null;
+    }
+
+    /**
+     * Get system property with fallback
+     */
+    public String getSystemProperty(String key, String defaultValue) {
+        return System.getProperty(key, defaultValue);
+    }
+
+    /**
+     * Get system property
+     */
+    public String getSystemProperty(String key) {
+        return System.getProperty(key);
+    }
+
+    // ---------- Data Validation Utilities ----------
+
+    /**
+     * Compare two data sets and return differences
+     */
+    public List<String> findDataDifferences(List<Map<String, String>> expected, List<Map<String, String>> actual) {
+        List<String> differences = new ArrayList<>();
+        
+        if (expected.size() != actual.size()) {
+            differences.add("Row count mismatch: Expected=" + expected.size() + ", Actual=" + actual.size());
+        }
+        
+        int rowsToCompare = Math.min(expected.size(), actual.size());
+        
+        for (int i = 0; i < rowsToCompare; i++) {
+            Map<String, String> expectedRow = expected.get(i);
+            Map<String, String> actualRow = actual.get(i);
+            
+            for (String key : expectedRow.keySet()) {
+                String expectedValue = expectedRow.get(key);
+                String actualValue = actualRow.get(key);
+                
+                if (!expectedValue.equals(actualValue)) {
+                    differences.add("Row " + (i+1) + ", Column '" + key + "': Expected='" + 
+                                   expectedValue + "', Actual='" + actualValue + "'");
+                }
+            }
+        }
+        
+        return differences;
+    }
+
+    /**
+     * Validate data structure against required columns
+     */
+    public boolean validateDataStructure(List<Map<String, String>> data, List<String> requiredColumns) {
+        if (data.isEmpty()) {
+            return false;
+        }
+        
+        Map<String, String> firstRow = data.get(0);
+        for (String column : requiredColumns) {
+            if (!firstRow.containsKey(column)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Check if string is valid JSON
+     */
+    public boolean isValidJson(String json) {
+        try {
+            new JSONObject(json);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // ---------- Simple Utilities ----------
+    /**
+     * Convert Google Sheet URL to CSV export URL
+     */
+    public String convertGoogleSheetToCsvUrl(String googleSheetUrl) {
+        try {
+            // Extract sheet ID from Google Sheets URL
+            Pattern pattern = Pattern.compile("/d/([a-zA-Z0-9-_]+)");
+            Matcher matcher = pattern.matcher(googleSheetUrl);
+             
+            if (matcher.find()) {
+                String sheetId = matcher.group(1);
+                return "https://docs.google.com/spreadsheets/d/" + sheetId + "/export?format=csv";
+            }
+            return null;
+        } catch (Exception e) {
+            logError("Failed to convert Google Sheet URL to CSV", e);
+            return null;
+        }
+    }
+
+    /**
+     * Read Google Sheets data from environment
+     */
+    public List<List<String>> readGoogleSheetFromEnv() {
+        try {
+            String googleSheetUrl = ConfigManager.get("GOOGLE_SHEET_LINK");
+            if (googleSheetUrl == null || googleSheetUrl.trim().isEmpty()) {
+                logError("GOOGLE_SHEET_LINK not found in environment variables", null);
+                return new ArrayList<>();
+            }
+            
+            String csvUrl = convertGoogleSheetToCsvUrl(googleSheetUrl);
+            if (csvUrl == null) {
+                logError("Failed to convert Google Sheet URL to CSV", null);
+                return new ArrayList<>();
+            }
+            
+            return readCsvFromUrl(csvUrl);
+        } catch (Exception e) {
+            logError("Failed to read Google Sheet from environment", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get specific cell by row and column index
+     */
+    public String getCell(List<List<String>> csvData, int rowIndex, int colIndex) {
+        if (csvData != null && rowIndex < csvData.size() && colIndex < csvData.get(rowIndex).size()) {
+            return csvData.get(rowIndex).get(colIndex);
+        }
+        return null;
+    }
+
+    /**
+     * Get entire row by index
+     */
+    public List<String> getRow(List<List<String>> csvData, int rowIndex) {
+        if (csvData != null && rowIndex < csvData.size()) {
+            return csvData.get(rowIndex);
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Get entire column by index
+     */
+    public List<String> getColumn(List<List<String>> csvData, int colIndex) {
+        List<String> column = new ArrayList<>();
+        
+        if (csvData != null) {
+            for (List<String> row : csvData) {
+                if (colIndex < row.size()) {
+                    column.add(row.get(colIndex));
+                }
+            }
+        }
+        
+        return column;
+    }
+
+    /**
+     * Get first column data
+     */
+    public List<String> getFirstColumn(List<List<String>> csvData) {
+        return getColumn(csvData, 0);
+    }
+
+    /**
+     * Get first row data
+     */
+    public List<String> getFirstRow(List<List<String>> csvData) {
+        return getRow(csvData, 0);
     }
 }

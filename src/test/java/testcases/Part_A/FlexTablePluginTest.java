@@ -8,21 +8,27 @@ import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.Assert;
-import pages.Part_A.FlexTablePluginPage;
-import pages.Part_A.WordPressPluginsPage;
+import pages.Part_A.*;
 import utilities.DriverSetup;
-import pages.Part_A.WordPressLoginPage;
-import pages.Part_A.WordPressDashboardPage;
+import utilities.WpCliHelper;
+import utilities.WpCliUtils;
 import testcases.BaseTest;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static utilities.DriverSetup.getDriver;
+
 public class FlexTablePluginTest extends BaseTest {
-    WebDriver driver = DriverSetup.getDriver();
+    WebDriver driver = getDriver();
 
     // Initialize page objects
     WordPressLoginPage loginPage = new WordPressLoginPage(driver);
     WordPressDashboardPage wordPressDashboardPage = new WordPressDashboardPage(driver);
     WordPressPluginsPage wordPressPluginsPage = new WordPressPluginsPage(driver);
     FlexTablePluginPage flexTablePluginPage = new FlexTablePluginPage(driver);
+    WordPressPages wordPressPages = new WordPressPages(driver);
+    CreatedPageWithFlexTable createdPageWithFlexTable = new CreatedPageWithFlexTable(driver);
     Faker faker = new Faker();
 
     @BeforeMethod
@@ -73,64 +79,261 @@ public class FlexTablePluginTest extends BaseTest {
                 wordPressPluginsPage.searchAndPressEnter(wordPressPluginsPage.installedPluginSearchField,"FlexTable");
                 boolean isActivated = wordPressPluginsPage.isElementVisible(wordPressPluginsPage.flexTableDeactivateLink);
                 Assert.assertTrue(isActivated);
-            }
         }
     }
+}
 
-    @Test(priority = 2, description = "Navigate to FlexTable Dashboard", 
-          dependsOnMethods = {"verifyFlexTablePluginActivation"})
+
+    @Test(priority = 2, description = "Navigate to FlexTable Dashboard",
+            dependsOnMethods = {"verifyFlexTablePluginActivation"})
     public void navigateToFlexTableDashboard() {
         wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-        
+
         boolean isCreateButtonVisible = flexTablePluginPage.isElementVisible(flexTablePluginPage.createNewTableButton);
-        Assert.assertTrue(isCreateButtonVisible, "FlexTable Dashboard did not load correctly");
+        if (isCreateButtonVisible) {
+            Assert.assertTrue(isCreateButtonVisible, "FlexTable Dashboard did not load correctly");
+        }
+        else {
+            Assert.assertTrue(flexTablePluginPage.isElementVisible(flexTablePluginPage.createNewTableLink));
+            Assert.assertTrue(flexTablePluginPage.isElementVisible(flexTablePluginPage.existingTableSearchField));
+        }
     }
 
 
     @Test(priority = 3, description = "Create a New Table Using Google Sheet Input"
     )
-    public void verifyNewTableCreationWithGoogleSheet() throws InterruptedException {
-        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-        boolean isExistingTableAvailable = flexTablePluginPage.isElementVisible(flexTablePluginPage.existingTableSearchField);
-        if (isExistingTableAvailable) {
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createNewTableLink);
-
-            // Load .env file directly
-            Dotenv dotenv = Dotenv.configure().load();
-
-            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.googleSheetInputField,googleSheetURL);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createTableFromUrlButton);
-
-            String tableTitle = faker.commerce().productName();
-            String tableDescription = faker.lorem().paragraph(1);
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableTitleField, tableTitle);
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableDescriptionField, tableDescription);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButton);
-            flexTablePluginPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-            By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4",tableTitle);
-            Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle),tableTitle);
-        }
-        else {
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createNewTableButton);
-
-            // Load .env file directly
-            Dotenv dotenv = Dotenv.configure().load();
-
-            String googleSheetURL = dotenv.get("GOOGLE_SHEET_LINK");
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.googleSheetInputField,googleSheetURL);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.createTableFromUrlButton);
-
-            String tableTitle = faker.commerce().productName();
-            String tableDescription = faker.lorem().paragraph(1);
-
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableTitleField, tableTitle);
-            flexTablePluginPage.sendKeysText(flexTablePluginPage.tableDescriptionField, tableDescription);
-            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButton);
-            flexTablePluginPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
-            By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4",tableTitle);
-            Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle),tableTitle);
-        }
+    public void verifyNewTableCreationWithGoogleSheet() throws Exception {
+        String tableTitle = faker.commerce().productName();
+        String tableDescription = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(tableTitle,tableDescription);
+        By newlyAddedTableTitle = flexTablePluginPage.getElementThroughTagAndText("h4", tableTitle);
+        Assert.assertEquals(flexTablePluginPage.getElementText(newlyAddedTableTitle), tableTitle);
 
     }
+
+    @Test(priority = 4, description = "Verify Table Display Using Shortcode")
+    public void verifyTableDisplayUsingShortcode() throws Exception {
+        // 1. Get CSV data from Google Sheets
+        List<List<String>> csvData = flexTablePluginPage.getCsvData();
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String pageTitle = faker.commerce().productName();
+        String PageUrl = wordPressPages.createPageUsingShortCode(pageTitle, shortCode);
+
+            getDriver().get(PageUrl);
+
+            Thread.sleep(3000);
+            List<WebElement> nameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.NameColumn);
+            for(int i=0; i<nameElements.size(); i++) {
+                String text = nameElements.get(i).getText();
+                Assert.assertEquals(text, csvData.get(i+1).get(0));
+            }
+
+            List<WebElement> idElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+            for(int i=0; i<idElements.size(); i++) {
+                String text = idElements.get(i).getText();
+                Assert.assertEquals(text, csvData.get(i+1).get(1));
+            }
+        }
+
+    @Test(priority = 5, description = "Enable 'Show Table Title' and 'Show Table Description Below Table")
+    public void verifyShowTableTableAndShowTableDescriptionDisplayProperly() throws InterruptedException {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+
+        getDriver().get(PageUrl);
+        By titleInPage = wordPressPages.getElementThroughTagAndText("h3",title);
+        By descriptionInPage = wordPressPages.getElementThroughTagAndText("p",description);
+        Assert.assertFalse(wordPressPages.isElementVisible(titleInPage));
+        Assert.assertFalse(wordPressPages.isElementVisible(descriptionInPage));
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        By tableEdit = flexTablePluginPage.getTableEditTag(title);
+        flexTablePluginPage.clickOnElement(tableEdit);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableCustomizationMenu);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showTitleToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showDescriptionToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+        getDriver().get(PageUrl);
+        By titleInPageVisible = wordPressPages.getElementThroughTagAndText("h3",title);
+        By descriptionInPageVisible = wordPressPages.getElementThroughTagAndText("p",description);
+        Assert.assertTrue(wordPressPages.isElementVisible(titleInPageVisible));
+        Assert.assertTrue(wordPressPages.isElementVisible(descriptionInPageVisible));
+    }
+
+    @Test(priority = 6, description = "Enable Entry Info & Pagination")
+    public void verifyEntryInfoDisplayCorrectlyAndPaginationFunctional() {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+        getDriver().get(PageUrl);
+
+        Assert.assertFalse(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.entryInfo));
+        Assert.assertFalse(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstPaginationNumber));
+
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        By tableEdit = flexTablePluginPage.getTableEditTag(title);
+        flexTablePluginPage.clickOnElement(tableEdit);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableCustomizationMenu);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showEntryInfoToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.showPaginationToggle);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+
+        getDriver().get(PageUrl);
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.entryInfo));
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstPaginationNumber));
+
+        boolean isNextPageAvailable = createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.secondPaginationNumber);
+        if(isNextPageAvailable) {
+            String firstPageName = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowFirstColumnData);
+            String firstPageId = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowSecondColumnData);
+
+            createdPageWithFlexTable.clickOnElement(createdPageWithFlexTable.secondPaginationNumber);
+
+            String secondPageName = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowFirstColumnData);
+            String secondPageId = createdPageWithFlexTable.getElementText(createdPageWithFlexTable.firstRowSecondColumnData);
+
+            Assert.assertNotEquals(firstPageName, secondPageName);
+            Assert.assertNotEquals(firstPageId, secondPageId);
+        }
+        else {
+            System.out.println("Only 1 Page Available!");
+        }
+    }
+
+    @Test(priority = 7, description = "Update 'Rows Per Page & Table Height")
+    public void verifyUpdatingRowPerPageAndTableHeightWorksProperly() throws InterruptedException {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+        getDriver().get(PageUrl);
+
+        Thread.sleep(3000);
+        List<WebElement> nameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+        int defaultRowSize = nameElements.size();
+
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        By tableEdit = flexTablePluginPage.getTableEditTag(title);
+        flexTablePluginPage.clickOnElement(tableEdit);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableCustomizationMenu);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableStylingButton);
+        if (defaultRowSize+1>5) {
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.rowPerPageDropDown,"5");
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.tableHeightDropDown,"1000px");
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+
+            getDriver().get(PageUrl);
+            Thread.sleep(3000);
+            List<WebElement> updatedNameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+            int updatedRowSize = updatedNameElements.size();
+            String defaultStyleOfRow = createdPageWithFlexTable.getElementAttribute(createdPageWithFlexTable.tableStyleAttributeToGetTableHeight,"style");
+            Assert.assertNotEquals(defaultRowSize,updatedRowSize);
+
+            String[] styleParts = defaultStyleOfRow.split("height:");
+            String heightValue = styleParts[1].split(";")[0].trim();
+            Assert.assertEquals(heightValue,"1000px");
+        }
+        else {
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.rowPerPageDropDown,"1");
+            flexTablePluginPage.dropDownOptionSelectByText(flexTablePluginPage.tableHeightDropDown,"1000px");
+            flexTablePluginPage.clickOnElement(flexTablePluginPage.saveChangesButtonToSaveCustomization);
+
+            getDriver().get(PageUrl);
+            Thread.sleep(3000);
+            List<WebElement> updatedNameElements = createdPageWithFlexTable.getElements(createdPageWithFlexTable.IDColumn);
+            int updatedRowSize = updatedNameElements.size();
+            String defaultStyleOfRow = createdPageWithFlexTable.getElementAttribute(createdPageWithFlexTable.tableStyleAttributeToGetTableHeight,"style");
+            Assert.assertNotEquals(defaultRowSize,updatedRowSize);
+            String[] styleParts = defaultStyleOfRow.split("height:");
+            String heightValue = styleParts[1].split(";")[0].trim();
+            Assert.assertEquals(heightValue,"1000px");
+
+        }
+    }
+
+    @Test(priority = 8, description = "Delete the Table and Verify Frontend Removal")
+    public void verifyThatAfterDeleteTableProperMessageDisplayedInFrontEnd() {
+        String title = faker.commerce().productName();
+        String description = faker.lorem().paragraph(1);
+        flexTablePluginPage.createNewTableWithGoogleSheet(title,description);
+
+        // Navigate to FlexTable Dashboard
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+
+        // Get the shortcode from the first table
+        String shortCode = flexTablePluginPage.getElementText(flexTablePluginPage.listFirstTableShortCode);
+        shortCode = shortCode.replace("[gswpts_table=\"", "[gswpts_table id=\"");
+        String PageUrl = wordPressPages.createPageUsingShortCode(title, shortCode);
+        getDriver().get(PageUrl);
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstRowFirstColumnData));
+        // Load .env file directly
+        Dotenv dotenv = Dotenv.configure().load();
+
+        // Navigate to WordPress login page using URL from environment
+        String baseUrl = dotenv.get("WP_URL");
+        getDriver().get(baseUrl);
+        wordPressDashboardPage.clickOnElement(wordPressDashboardPage.flexTableMenu);
+        flexTablePluginPage.sendKeysText(flexTablePluginPage.existingTableSearchField,title);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.tableDeleteButton);
+        flexTablePluginPage.clickOnElement(flexTablePluginPage.modalDeleteButton);
+        getDriver().get(PageUrl);
+        Assert.assertFalse(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.firstRowFirstColumnData));
+        Assert.assertTrue(createdPageWithFlexTable.isElementVisible(createdPageWithFlexTable.deletedTableMsg));
+
+    }
+
+
 }
+

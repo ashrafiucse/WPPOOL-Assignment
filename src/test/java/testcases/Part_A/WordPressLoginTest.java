@@ -22,9 +22,18 @@ public class WordPressLoginTest extends BaseTest {
         // Perform login using environment credentials (handled in doLogin method)
         loginPage.doLogin();
         
-        // Verify dashboard page locators are visible
-        boolean isHomeButtonVisible = dashboardPage.isElementVisible(dashboardPage.dashboardHomeButton);
-        boolean isPluginsMenuVisible = dashboardPage.isElementVisible(dashboardPage.pluginsMenu);
+        // Handle headless mode rendering issues
+        handleHeadlessModeIssues();
+        
+        // Handle headless mode rendering issues
+        handleHeadlessModeIssues();
+        
+        // Handle headless mode rendering issues
+        handleHeadlessModeIssues();
+        
+        // Verify dashboard page locators are visible with enhanced checks for headless mode
+        boolean isHomeButtonVisible = dashboardPage.isDashboardHomeVisible();
+        boolean isPluginsMenuVisible = dashboardPage.isPluginsMenuVisible();
         
         // Assert that dashboard elements are visible
         Assert.assertTrue(isHomeButtonVisible, "Dashboard Home button should be visible after login");

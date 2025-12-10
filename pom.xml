@@ -10,54 +10,103 @@
   <name>WPPOOL-Assignment</name>
   <url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <!-- Performance optimizations for Java 17 -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <!-- Default values -->
+        <suiteXmlFile>testng.xml</suiteXmlFile>
+        <browser>chrome</browser>
+        <headless>false</headless>
+        <!-- Performance monitoring -->
+        <performance.monitoring>true</performance.monitoring>
+        <!-- Parallel execution settings -->
+        <parallel.thread.count>3</parallel.thread.count>
+        <parallel.methods>false</parallel.methods>
+        <parallel.tests>true</parallel.tests>
+    </properties>
 
-  <dependencies>
-      <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
-      <dependency>
-          <groupId>org.seleniumhq.selenium</groupId>
-          <artifactId>selenium-java</artifactId>
-          <version>4.26.0</version>
-      </dependency>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.26.0</version>
+        </dependency>
 
-      <!-- https://mvnrepository.com/artifact/org.testng/testng -->
-      <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <version>7.10.2</version>
-          <scope>test</scope>
-      </dependency>
+        <!-- https://mvnrepository.com/artifact/org.testng/testng -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>7.10.2</version>
+            <scope>test</scope>
+        </dependency>
 
-      <!-- https://mvnrepository.com/artifact/io.qameta.allure/allure-testng -->
-      <dependency>
-          <groupId>io.qameta.allure</groupId>
-          <artifactId>allure-testng</artifactId>
-          <version>2.29.1</version>
-      </dependency>
+        <!-- https://mvnrepository.com/artifact/io.qameta.allure/allure-testng -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-testng</artifactId>
+            <version>2.29.1</version>
+        </dependency>
 
-      <!-- https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager -->
-      <dependency>
-          <groupId>io.github.bonigarcia</groupId>
-          <artifactId>webdrivermanager</artifactId>
-          <version>6.2.0</version>
-      </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager -->
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>6.2.0</version>
+        </dependency>
 
-      <!-- https://mvnrepository.com/artifact/com.github.javafaker/javafaker -->
-      <dependency>
-          <groupId>com.github.javafaker</groupId>
-          <artifactId>javafaker</artifactId>
-          <version>1.0.2</version>
-      </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.javafaker/javafaker -->
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
+        </dependency>
 
-      <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
-      <dependency>
-          <groupId>io.github.cdimascio</groupId>
-          <artifactId>dotenv-java</artifactId>
-          <version>3.0.0</version>
-      </dependency>
-  </dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.14.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.16</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+        <!-- SLF4J NOP binding to suppress SLF4J warnings -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+    </dependencies>
 
   <build>
     <plugins>
@@ -72,30 +121,100 @@
       </plugin>
       
       <!-- Maven Compiler Plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <configuration>
-          <source>8</source>
-          <target>8</target>
-        </configuration>
-      </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <!-- Default TestNG suite file -->
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <!-- Safe parallel execution configuration -->
+                    <parallel>tests</parallel>
+                    <threadCount>${parallel.thread.count}</threadCount>
+                    <perCoreThreadCount>false</perCoreThreadCount>
+                    <useUnlimitedThreads>false</useUnlimitedThreads>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <!-- System properties for browser configuration -->
+                    <systemPropertyVariables>
+                        <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
+                        <browser>${browser}</browser>
+                        <headless>${headless}</headless>
+                        <performance.monitoring>${performance.monitoring}</performance.monitoring>
+                        <!-- Suppress all logging warnings -->
+                        <webdriver.chrome.verboseLogging>false</webdriver.chrome.verboseLogging>
+                        <webdriver.chrome.silentOutput>true</webdriver.chrome.silentOutput>
+                        <webdriver.edge.verboseLogging>false</webdriver.edge.verboseLogging>
+                        <webdriver.edge.silentOutput>true</webdriver.edge.silentOutput>
+                        <webdriver.firefox.verboseLogging>false</webdriver.firefox.verboseLogging>
+                        <webdriver.firefox.silentOutput>true</webdriver.firefox.silentOutput>
+                        <selenium.logs.level>OFF</selenium.logs.level>
+                        <org.slf4j.simpleLogger.defaultLogLevel>off</org.slf4j.simpleLogger.defaultLogLevel>
+                        <org.slf4j.simpleLogger.log.org.apache.maven>off</org.slf4j.simpleLogger.log.org.apache.maven>
+                        <org.slf4j.simpleLogger.log.org.testng>off</org.slf4j.simpleLogger.log.org.testng>
+                        <java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
+                        <!-- Suppress Java warnings -->
+                        <!-- java.awt.headless moved to argLine to avoid duplication -->
+                        <!-- Suppress Maven warnings -->
+                        <maven.javadoc.skip>true</maven.javadoc.skip>
+                        <maven.main.skip>true</maven.main.skip>
+                        <!-- Suppress all system warnings -->
+                        <sun.java2d.d3d>false</sun.java2d.d3d>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
+                    <!-- Enhanced JVM configuration for Java 17 with warnings suppressed -->
+                    <argLine>-Xmx2g -Xms1g -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.awt.headless=true -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -XX:-PrintWarnings -XX:-PrintGCDetails -XX:-PrintGCDateStamps -Dsun.java2d.d3d=false -Djava.util.logging.config.file=src/test/resources/logging.properties</argLine>
+                    <!-- Minimal output -->
+                    <trimStackTrace>true</trimStackTrace>
+                    <printSummary>false</printSummary>
+                    <useFile>false</useFile>
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
       
-      <!-- Maven Surefire Plugin for TestNG -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
-        <configuration>
-          <suiteXmlFiles>
-            <suiteXmlFile>testng.xml</suiteXmlFile>
-          </suiteXmlFiles>
-          <systemPropertyVariables>
-            <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
+
     </plugins>
-  </build>
+    </build>
+
+    <!-- Execution Profiles -->
+    <profiles>
+
+        <!-- Sequential Execution (Default) -->
+        <profile>
+            <id>sequential</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <suiteXmlFile>testng.xml</suiteXmlFile>
+            </properties>
+        </profile>
+
+        <!-- Parallel Execution -->
+        <profile>
+            <id>parallel</id>
+            <properties>
+                <suiteXmlFile>testng-parallel.xml</suiteXmlFile>
+            </properties>
+        </profile>
+
+        <!-- Smoke Tests -->
+        <profile>
+            <id>smoke</id>
+            <properties>
+                <suiteXmlFile>testng-smoke.xml</suiteXmlFile>
+            </properties>
+        </profile>
+
+        <!-- Performance Tests -->
+        <profile>
+            <id>performance</id>
+            <properties>
+                <suiteXmlFile>testng-performance.xml</suiteXmlFile>
+            </properties>
+        </profile>
+
+    </profiles>
 </project>
