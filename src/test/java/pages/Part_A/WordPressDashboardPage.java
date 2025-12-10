@@ -14,6 +14,7 @@ public class WordPressDashboardPage extends BasePage {
     // Alternative locators for headless mode
     public By dashboardHomeButtonAlt = By.cssSelector("#menu-dashboard .wp-menu-name");
     public By pluginsMenuAlt = By.cssSelector("a[href='plugins.php']");
+    public By wooCommerceMenu = By.xpath("//a[contains(@href,'?page=wc-admin')]//div[contains(text(),'WooCommerce')]");
     
     /**
      * Enhanced method to check dashboard home button visibility
