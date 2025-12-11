@@ -12,6 +12,7 @@ A comprehensive Selenium WebDriver automation framework for testing WPPOOL web a
 - **Allure Reporting** - Beautiful, interactive test reports with screenshots and logs
 - **Explicit Waits Only** - No flaky tests, reliable execution
 - **Thread-Safe Architecture** - Safe parallel execution with isolated driver instances
+- **GitHub Actions CI/CD** - Automated testing on every push and pull request
 
 ---
 
@@ -194,6 +195,40 @@ mvn clean test allure:serve
 Report will be available at `http://localhost:8080` when using `allure:serve`
 
 ---
+
+## 🤖 GitHub Actions CI/CD
+
+### Automated Testing Pipeline
+
+The project includes GitHub Actions workflows that automatically run tests on every push and pull request:
+
+#### Main Test Suite (`selenium-tests.yml`)
+- **Triggers**: Push to main/master branches, pull requests
+- **Browsers**: Chrome, Firefox, Edge (all in headless mode)
+- **Reports**: Allure reports and test artifacts uploaded
+- **Matrix Strategy**: Tests run in parallel across all browsers
+
+#### Quick Feedback (Pull Requests)
+- **Smoke Tests**: Fast feedback with Chrome only for pull requests
+- **Parallel Execution**: Reduces CI time for faster development cycles
+
+### Workflow Features
+- ✅ **Cross-browser testing** across Chrome, Firefox, and Edge
+- ✅ **Automatic browser installation** on Ubuntu runners
+- ✅ **Maven caching** for faster builds
+- ✅ **Test artifact uploads** for detailed analysis
+- ✅ **Allure report generation** and upload
+- ✅ **Failure notifications** (configurable)
+
+### Viewing CI Results
+1. Go to the **Actions** tab in your GitHub repository
+2. Click on the latest workflow run
+3. Download **artifacts** to view detailed test reports
+4. Access **Allure reports** for interactive test results
+
+---
+
+
 
 ## 📊 Test Coverage
 
