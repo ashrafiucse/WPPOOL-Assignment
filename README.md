@@ -194,6 +194,13 @@ mvn clean test allure:serve
 
 Report will be available at `http://localhost:8080` when using `allure:serve`
 
+### Troubleshooting Allure Reports
+If `mvn allure:report` fails due to dependency issues:
+- Install Allure CLI from https://github.com/allure-framework/allure2/releases
+- Generate report: `allure generate target/surefire-reports --clean --output target/allure-report`
+- Serve report: `allure serve target/allure-report`
+- This creates the same interactive report from TestNG/surefire results.
+
 ---
 
 ## 🤖 GitHub Actions CI/CD
