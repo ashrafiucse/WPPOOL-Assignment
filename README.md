@@ -124,31 +124,7 @@ mvn clean test -Dbrowser=firefox
 mvn clean test -Dbrowser=edge
 ```
 
-### Parallel Execution (Fast - Requires More Resources)
 
-#### Headless Mode
-```bash
-# Chrome Parallel Headless
-mvn clean test -Pparallel -Dbrowser=chrome -Dheadless=true
-
-# Firefox Parallel Headless  
-mvn clean test -Pparallel -Dbrowser=firefox -Dheadless=true
-
-# Edge Parallel Headless
-mvn clean test -Pparallel -Dbrowser=edge -Dheadless=true
-```
-
-#### Headed Mode
-```bash
-# Chrome Parallel Headed
-mvn clean test -Pparallel -Dbrowser=chrome
-
-# Firefox Parallel Headed
-mvn clean test -Pparallel -Dbrowser=firefox
-
-# Edge Parallel Headed  
-mvn clean test -Pparallel -Dbrowser=edge
-```
 
 ### Special Commands
 
@@ -249,7 +225,6 @@ The project includes GitHub Actions workflows that automatically run tests on ev
 
 ### Performance
 - **Sequential**: Stable execution, lower resource usage
-- **Parallel**: Faster execution, higher resource usage
 - **Headless**: Faster execution, no GUI
 - **Headed**: Visual debugging, slower execution
 
@@ -294,9 +269,8 @@ WPPOOL-Assignment/
 
 #### Tests Running Multiple Times
 ```bash
-# Use correct profile
-mvn clean test -Pparallel  # For parallel
-mvn clean test             # For sequential (default)
+# Use sequential execution (default)
+mvn clean test
 ```
 
 #### Browser Driver Issues
@@ -304,10 +278,10 @@ mvn clean test             # For sequential (default)
 mvn clean install -U
 ```
 
-#### Memory Issues (Parallel Mode)
+#### Memory Issues
 ```bash
 export MAVEN_OPTS="-Xmx4g -Xms2g"
-mvn clean test -Pparallel
+mvn clean test
 ```
 
 #### For Debugging
