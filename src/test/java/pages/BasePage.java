@@ -35,7 +35,44 @@ public class BasePage {
     }
 
     public void clickOnElement(By locator) {
-        clickOnElementWithRetry(locator, 3, false);
+        // For WordPress admin menu elements in headless mode, use JavaScript click immediately
+        if (isHeadless() && isWordPressAdminMenuElement(locator)) {
+            clickWithJavaScript(locator);
+            return;
+        }
+
+        // Use longer timeout for headless mode
+        Duration timeout = isHeadless() ? Duration.ofSeconds(60) : DEFAULT_WAIT;
+        clickOnElementWithRetry(locator, 3, false, timeout);
+    }
+
+    private boolean isHeadless() {
+        String headless = System.getProperty("headless", "false");
+        return "true".equalsIgnoreCase(headless);
+    }
+
+    private boolean isWordPressAdminMenuElement(By locator) {
+        String locatorString = locator.toString();
+        return locatorString.contains("wp-menu-name") ||
+               locatorString.contains("plugins.php") ||
+               locatorString.contains("post_type=page");
+    }
+
+    private void clickWithJavaScript(By locator) {
+        try {
+            WebElement element = waitForElementToBePresence(locator);
+            scrollToSpecificElement(locator);
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            ((JavascriptExecutor) getDriver()).executeScript("arguments[0].click();", element);
+            System.out.println("[DEBUG] Element clicked successfully with JavaScript click (WordPress admin menu)");
+        } catch (Exception e) {
+            System.out.println("[DEBUG] JavaScript click failed: " + e.getMessage());
+            throw e;
+        }
     }
 
     public void clickOnElement(WebElement element) {

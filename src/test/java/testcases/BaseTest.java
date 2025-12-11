@@ -103,6 +103,21 @@ public String getHomepageUrl() {
         return homepageUrl != null ? homepageUrl + "/my-account" : null;
     }
 
+    public String getCheckoutUrl() {
+        String homepageUrl = getHomepageUrl();
+        return homepageUrl != null ? homepageUrl + "/checkout" : null;
+    }
+
+    public String getWooCommerceAdminUrl() {
+        String homepageUrl = getHomepageUrl();
+        return homepageUrl != null ? homepageUrl + "/wp-admin/admin.php?page=wc-admin" : null;
+    }
+
+    public String getWooCommerceOrdersUrl() {
+        String homepageUrl = getHomepageUrl();
+        return homepageUrl != null ? homepageUrl + "/wp-admin/admin.php?page=wc-orders" : null;
+    }
+
     
     public void cleanup() {
         

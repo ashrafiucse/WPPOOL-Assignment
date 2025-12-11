@@ -24,6 +24,20 @@ A comprehensive Selenium WebDriver automation framework for testing WPPOOL web a
 
 ### Software Installation
 
+#### Install Browsers (Choose at least one)
+```bash
+# Chrome (Recommended)
+# Download from: https://www.google.com/chrome/
+
+# Firefox
+# Download from: https://www.mozilla.org/firefox/download/thanks/
+
+# Microsoft Edge (Pre-installed on Windows 10+)
+# Already available on most Windows systems
+```
+
+> **⚠️ Important**: The browsers listed above must be installed on your computer to run the tests. The project includes the necessary WebDrivers (chromedriver, geckodriver, etc.) in the `drivers/` folder, but you need the actual browser applications installed to execute the tests.
+
 #### Install Java 8+
 ```bash
 # Windows (using Chocolatey)
