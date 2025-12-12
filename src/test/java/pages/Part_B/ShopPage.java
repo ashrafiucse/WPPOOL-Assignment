@@ -28,11 +28,9 @@ public class ShopPage extends BasePage {
             }
             
             String rawPriceText = getElementText(priceLocator);
-            System.out.println("Raw price text: " + rawPriceText);
             
             // Clean currency characters, commas, spaces - keep only numbers and decimal point
             String cleanPrice = rawPriceText.replaceAll("[^0-9.]", "");
-            System.out.println("Cleaned price: " + cleanPrice);
             
             if (cleanPrice.isEmpty()) {
                 return 0.0f;
