@@ -230,6 +230,29 @@ public class DriverSetup {
 
         FirefoxOptions options = new FirefoxOptions();
 
+        // Set Firefox binary path if found
+        String firefoxBinaryPath = findFirefoxBinary();
+        if (firefoxBinaryPath != null) {
+            options.setBinary(firefoxBinaryPath);
+        } else {
+            // Firefox not found, provide helpful error message
+            System.err.println("[ERROR] Firefox browser not found!");
+            System.err.println("");
+            System.err.println("=== FIREFOX BROWSER REQUIRED ===");
+            System.err.println("To run tests with Firefox, you need to install Firefox browser.");
+            System.err.println("");
+            System.err.println("QUICK INSTALL:");
+            System.err.println("1. Download: https://www.mozilla.org/firefox/download/thanks/");
+            System.err.println("2. Install Firefox to default location");
+            System.err.println("3. Run tests again");
+            System.err.println("");
+            System.err.println("Alternative: Use Chrome or Edge browser:");
+            System.err.println("  mvn test -Dbrowser=chrome");
+            System.err.println("  mvn test -Dbrowser=edge");
+            System.err.println("================================");
+            throw new RuntimeException("Firefox browser not found - see installation instructions above");
+        }
+
         // Enhanced Firefox options for performance and stability
         options.addPreference("dom.webnotifications.enabled", false);
         options.addPreference("media.volume_scale", "0.0");
@@ -477,6 +500,40 @@ public class DriverSetup {
                 }
             } catch (Exception ignored) {
                 // Continue trying other paths
+            }
+        }
+
+        return null;
+    }
+
+    private static String findFirefoxBinary() {
+        // Common locations where Firefox might be found
+        String[] possiblePaths = {
+                "C:\\Program Files\\Mozilla Firefox\\firefox.exe", // Default installation
+                "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe", // 32-bit installation
+                "firefox.exe", // If it's in PATH
+                "firefox", // If it's in PATH (no extension)
+                System.getProperty("user.home") + "\\AppData\\Local\\Mozilla Firefox\\firefox.exe",
+                ".\\firefox.exe",
+        };
+
+        for (String path : possiblePaths) {
+            try {
+                java.io.File file = new java.io.File(path);
+                if (file.exists() && file.canExecute()) {
+                    // Test if it's actually Firefox
+                    ProcessBuilder pb = new ProcessBuilder(path, "--version");
+                    pb.redirectErrorStream(true);
+                    Process process = pb.start();
+                    int exitCode = process.waitFor();
+
+                    if (exitCode == 0) {
+                        return path;
+                    }
+                }
+            } catch (Exception e) {
+                // Continue trying other paths
+                System.out.println("[DEBUG] Could not verify Firefox at " + path + ": " + e.getMessage());
             }
         }
 

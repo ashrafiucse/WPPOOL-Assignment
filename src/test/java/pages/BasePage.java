@@ -35,7 +35,44 @@ public class BasePage {
     }
 
     public void clickOnElement(By locator) {
-        clickOnElementWithRetry(locator, 3, false);
+        // For WordPress admin menu elements in headless mode, use JavaScript click immediately
+        if (isHeadless() && isWordPressAdminMenuElement(locator)) {
+            clickWithJavaScript(locator);
+            return;
+        }
+
+        // Use longer timeout for headless mode
+        Duration timeout = isHeadless() ? Duration.ofSeconds(60) : DEFAULT_WAIT;
+        clickOnElementWithRetry(locator, 3, false, timeout);
+    }
+
+    private boolean isHeadless() {
+        String headless = System.getProperty("headless", "false");
+        return "true".equalsIgnoreCase(headless);
+    }
+
+    private boolean isWordPressAdminMenuElement(By locator) {
+        String locatorString = locator.toString();
+        return locatorString.contains("wp-menu-name") ||
+               locatorString.contains("plugins.php") ||
+               locatorString.contains("post_type=page");
+    }
+
+    private void clickWithJavaScript(By locator) {
+        try {
+            WebElement element = waitForElementToBePresence(locator);
+            scrollToSpecificElement(locator);
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            ((JavascriptExecutor) getDriver()).executeScript("arguments[0].click();", element);
+            System.out.println("[DEBUG] Element clicked successfully with JavaScript click (WordPress admin menu)");
+        } catch (Exception e) {
+            System.out.println("[DEBUG] JavaScript click failed: " + e.getMessage());
+            throw e;
+        }
     }
 
     public void clickOnElement(WebElement element) {
@@ -1684,6 +1721,29 @@ public class BasePage {
             return null;
         } catch (Exception e) {
             logError("Failed to convert Google Sheet URL to CSV", e);
+            return null;
+        }
+    }
+
+    /**
+     * Extract table ID from FlexTable edit URL
+     * @param editUrl URL in format: ...#/tables/edit/41
+     * @return Table ID as String, or null if not found
+     */
+    public String extractTableIdFromEditUrl(String editUrl) {
+        try {
+            Pattern pattern = Pattern.compile("/edit/(\\d+)");
+            Matcher matcher = pattern.matcher(editUrl);
+            
+            if (matcher.find()) {
+                String tableId = matcher.group(1);
+                logInfo("Successfully extracted table ID: " + tableId + " from URL: " + editUrl);
+                return tableId;
+            }
+            logWarning("No table ID found in edit URL: " + editUrl);
+            return null;
+        } catch (Exception e) {
+            logError("Failed to extract table ID from edit URL", e);
             return null;
         }
     }

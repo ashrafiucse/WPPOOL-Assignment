@@ -12,6 +12,7 @@ A comprehensive Selenium WebDriver automation framework for testing WPPOOL web a
 - **Allure Reporting** - Beautiful, interactive test reports with screenshots and logs
 - **Explicit Waits Only** - No flaky tests, reliable execution
 - **Thread-Safe Architecture** - Safe parallel execution with isolated driver instances
+- **GitHub Actions CI/CD** - Automated testing on every push and pull request
 
 ---
 
@@ -23,6 +24,20 @@ A comprehensive Selenium WebDriver automation framework for testing WPPOOL web a
 - **RAM**: Minimum 8GB (16GB recommended for parallel execution)
 
 ### Software Installation
+
+#### Install Browsers (Choose at least one)
+```bash
+# Chrome (Recommended)
+# Download from: https://www.google.com/chrome/
+
+# Firefox
+# Download from: https://www.mozilla.org/firefox/download/thanks/
+
+# Microsoft Edge (Pre-installed on Windows 10+)
+# Already available on most Windows systems
+```
+
+> **⚠️ Important**: The browsers listed above must be installed on your computer to run the tests. The project includes the necessary WebDrivers (chromedriver, geckodriver, etc.) in the `drivers/` folder, but you need the actual browser applications installed to execute the tests.
 
 #### Install Java 8+
 ```bash
@@ -109,31 +124,7 @@ mvn clean test -Dbrowser=firefox
 mvn clean test -Dbrowser=edge
 ```
 
-### Parallel Execution (Fast - Requires More Resources)
 
-#### Headless Mode
-```bash
-# Chrome Parallel Headless
-mvn clean test -Pparallel -Dbrowser=chrome -Dheadless=true
-
-# Firefox Parallel Headless  
-mvn clean test -Pparallel -Dbrowser=firefox -Dheadless=true
-
-# Edge Parallel Headless
-mvn clean test -Pparallel -Dbrowser=edge -Dheadless=true
-```
-
-#### Headed Mode
-```bash
-# Chrome Parallel Headed
-mvn clean test -Pparallel -Dbrowser=chrome
-
-# Firefox Parallel Headed
-mvn clean test -Pparallel -Dbrowser=firefox
-
-# Edge Parallel Headed  
-mvn clean test -Pparallel -Dbrowser=edge
-```
 
 ### Special Commands
 
@@ -179,7 +170,48 @@ mvn clean test allure:serve
 
 Report will be available at `http://localhost:8080` when using `allure:serve`
 
+### Troubleshooting Allure Reports
+If `mvn allure:report` fails due to dependency issues:
+- Install Allure CLI from https://github.com/allure-framework/allure2/releases
+- Generate report: `allure generate target/surefire-reports --clean --output target/allure-report`
+- Serve report: `allure serve target/allure-report`
+- This creates the same interactive report from TestNG/surefire results.
+
 ---
+
+## 🤖 GitHub Actions CI/CD
+
+### Automated Testing Pipeline
+
+The project includes GitHub Actions workflows that automatically run tests on every push and pull request:
+
+#### Main Test Suite (`selenium-tests.yml`)
+- **Triggers**: Push to main/master branches, pull requests
+- **Browsers**: Chrome, Firefox, Edge (all in headless mode)
+- **Reports**: Allure reports and test artifacts uploaded
+- **Matrix Strategy**: Tests run in parallel across all browsers
+
+#### Quick Feedback (Pull Requests)
+- **Smoke Tests**: Fast feedback with Chrome only for pull requests
+- **Parallel Execution**: Reduces CI time for faster development cycles
+
+### Workflow Features
+- ✅ **Cross-browser testing** across Chrome, Firefox, and Edge
+- ✅ **Automatic browser installation** on Ubuntu runners
+- ✅ **Maven caching** for faster builds
+- ✅ **Test artifact uploads** for detailed analysis
+- ✅ **Allure report generation** and upload
+- ✅ **Failure notifications** (configurable)
+
+### Viewing CI Results
+1. Go to the **Actions** tab in your GitHub repository
+2. Click on the latest workflow run
+3. Download **artifacts** to view detailed test reports
+4. Access **Allure reports** for interactive test results
+
+---
+
+
 
 ## 📊 Test Coverage
 
@@ -193,7 +225,6 @@ Report will be available at `http://localhost:8080` when using `allure:serve`
 
 ### Performance
 - **Sequential**: Stable execution, lower resource usage
-- **Parallel**: Faster execution, higher resource usage
 - **Headless**: Faster execution, no GUI
 - **Headed**: Visual debugging, slower execution
 
@@ -238,9 +269,8 @@ WPPOOL-Assignment/
 
 #### Tests Running Multiple Times
 ```bash
-# Use correct profile
-mvn clean test -Pparallel  # For parallel
-mvn clean test             # For sequential (default)
+# Use sequential execution (default)
+mvn clean test
 ```
 
 #### Browser Driver Issues
@@ -248,10 +278,10 @@ mvn clean test             # For sequential (default)
 mvn clean install -U
 ```
 
-#### Memory Issues (Parallel Mode)
+#### Memory Issues
 ```bash
 export MAVEN_OPTS="-Xmx4g -Xms2g"
-mvn clean test -Pparallel
+mvn clean test
 ```
 
 #### For Debugging

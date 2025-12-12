@@ -46,9 +46,9 @@
 
         <!-- https://mvnrepository.com/artifact/io.qameta.allure/allure-testng -->
         <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-testng</artifactId>
-            <version>2.29.1</version>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-testng</artifactId>
+        <version>2.29.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager -->
@@ -114,9 +114,9 @@
       <plugin>
         <groupId>io.qameta.allure</groupId>
         <artifactId>allure-maven</artifactId>
-        <version>2.12.0</version>
+        <version>2.15.2</version>
         <configuration>
-          <reportVersion>2.29.1</reportVersion>
+          <reportVersion>2.35.1</reportVersion>
         </configuration>
       </plugin>
       
@@ -130,19 +130,21 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
                     </suiteXmlFiles>
-                    <!-- Safe parallel execution configuration -->
-                    <parallel>tests</parallel>
-                    <threadCount>${parallel.thread.count}</threadCount>
-                    <perCoreThreadCount>false</perCoreThreadCount>
-                    <useUnlimitedThreads>false</useUnlimitedThreads>
-                    <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
+                     <!-- Sequential execution configuration -->
+                     <forkCount>1</forkCount>
+                     <reuseForks>false</reuseForks>
                     <!-- System properties for browser configuration -->
-                    <systemPropertyVariables>
-                        <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
-                        <browser>${browser}</browser>
-                        <headless>${headless}</headless>
-                        <performance.monitoring>${performance.monitoring}</performance.monitoring>
+                     <properties>
+                         <property>
+                             <name>listener</name>
+                             <value>io.qameta.allure.testng.AllureTestNg</value>
+                         </property>
+                     </properties>
+                     <systemPropertyVariables>
+                         <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
+                         <browser>${browser}</browser>
+                         <headless>${headless}</headless>
+                         <performance.monitoring>${performance.monitoring}</performance.monitoring>
                         <!-- Suppress all logging warnings -->
                         <webdriver.chrome.verboseLogging>false</webdriver.chrome.verboseLogging>
                         <webdriver.chrome.silentOutput>true</webdriver.chrome.silentOutput>
@@ -165,7 +167,7 @@
                         <java.awt.headless>true</java.awt.headless>
                     </systemPropertyVariables>
                     <!-- Enhanced JVM configuration for Java 17 with warnings suppressed -->
-                    <argLine>-Xmx2g -Xms1g -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.awt.headless=true -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -XX:-PrintWarnings -XX:-PrintGCDetails -XX:-PrintGCDateStamps -Dsun.java2d.d3d=false -Djava.util.logging.config.file=src/test/resources/logging.properties</argLine>
+                     <argLine>-Xmx2g -Xms1g -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.awt.headless=true -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -XX:-PrintWarnings -XX:-PrintGCDetails -XX:-PrintGCDateStamps -Dsun.java2d.d3d=false -Djava.util.logging.config.file=src/test/resources/logging.properties -Dallure.results.directory=target/allure-results -Dallure.debug=true</argLine>
                     <!-- Minimal output -->
                     <trimStackTrace>true</trimStackTrace>
                     <printSummary>false</printSummary>
