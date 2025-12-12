@@ -71,18 +71,30 @@ git clone https://github.com/ashrafiucse/WPPOOL-Assignment.git
 cd WPPOOL-Assignment
 ```
 
-#### 2. Install Dependencies
+#### 2. Set up Environment Variables
+```bash
+cp .env.example .env
+# Edit .env with your actual credentials
+```
+
+#### 3. Install Dependencies
 ```bash
 mvn clean install
 ```
 
-#### 3. Configure Test Data
-Update credentials and URLs in `.env` file:
+#### 4. Configure Test Data
+Update the following variables in your `.env` file:
+- `WP_URL`: Your WordPress admin URL
+- `WP_USER`: Your WordPress admin username
+- `WP_PASS`: Your WordPress admin password
+- `GOOGLE_SHEET_LINK`: Link to your Google Sheet for testing
+
+Example `.env` content:
 ```bash
-# Application Configuration
-WP_URL=http://wppool-test.local/wp-admin
+WP_URL=https://your-site.com/wp-admin
 WP_USER=admin
-WP_PASS=admin
+WP_PASS=your_secure_password
+GOOGLE_SHEET_LINK=https://docs.google.com/spreadsheets/d/1234567890abcdef/edit
 ```
 
 #### 4. Terminal Encoding (Windows Only)
@@ -248,6 +260,7 @@ WPPOOL-Assignment/
 │               ├── DriverSetup.java
 │               └── ConfigManager.java
 ├── .env
+├── .env.example
 ├── .gitignore
 ├── pom.xml
 ├── testng.xml
